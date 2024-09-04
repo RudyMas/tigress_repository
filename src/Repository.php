@@ -10,8 +10,8 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.0.0
- * @lastmodified 2024-09-03
+ * @version 1.1.0
+ * @lastmodified 2024-09-04
  * @package Tigress\Repository
  */
 class Repository
@@ -19,6 +19,7 @@ class Repository
     private string $model;
     private Database $database;
     private string $table;
+    private array $primaryKey;
     private array $objects = [];
 
     /**
@@ -28,7 +29,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.0.0';
+        return '1.1.0';
     }
 
     /**
@@ -47,6 +48,12 @@ class Repository
         $this->setObjectsByQuery();
     }
 
+    /**
+     * Load all active data from the database
+     *
+     * @param string $orderBy
+     * @return void
+     */
     public function loadAllActive(string $orderBy = ''): void
     {
         $sql = "SELECT * FROM {$this->table} WHERE active = 1";
@@ -57,6 +64,12 @@ class Repository
         $this->setObjectsByQuery();
     }
 
+    /**
+     * Load all inactive data from the database
+     *
+     * @param string $orderBy
+     * @return void
+     */
     public function loadAllInactive(string $orderBy = ''): void
     {
         $sql = "SELECT * FROM {$this->table} WHERE active = 0";
@@ -76,11 +89,35 @@ class Repository
      */
     public function loadById(int $id, string $orderBy = ''): void
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
+        $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey[0]} = :id";
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
         $keyBindings = [':id' => $id];
+        $this->database->runQuery($sql, $keyBindings);
+        $this->setObjectsByQuery();
+    }
+
+    /**
+     * Load data from the database based on the primary keys
+     *
+     * @param array $primaryKeyValue
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadByPrimaryKey(array $primaryKeyValue, string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE ";
+        $count = 0;
+        foreach ($this->primaryKey as $key) {
+            $sql .= "{$key} = :{$key} AND ";
+            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
+            $count++;
+        }
+        $sql = rtrim($sql, ' AND ');
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
         $this->database->runQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
@@ -143,6 +180,72 @@ class Repository
     }
 
     /**
+     * Load data from the database based on multiple fields
+     *
+     * @param array $fields
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadByFields(array $fields, string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE ";
+        foreach ($fields as $field => $value) {
+            $sql .= "{$field} = :{$field} AND ";
+            $keyBindings[":{$field}"] = $value;
+        }
+        $sql = rtrim($sql, ' AND ');
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->runQuery($sql, $keyBindings);
+        $this->setObjectsByQuery();
+    }
+
+    /**
+     * Load data from the database based on multiple fields and active
+     *
+     * @param array $fields
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadByFieldsActive(array $fields, string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE ";
+        foreach ($fields as $field => $value) {
+            $sql .= "{$field} = :{$field} AND ";
+            $keyBindings[":{$field}"] = $value;
+        }
+        $sql .= "active = 1";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->runQuery($sql, $keyBindings);
+        $this->setObjectsByQuery();
+    }
+
+    /**
+     * Load data from the database based on multiple fields and inactive
+     *
+     * @param array $fields
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadByFieldsInactive(array $fields, string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE ";
+        foreach ($fields as $field => $value) {
+            $sql .= "{$field} = :{$field} AND ";
+            $keyBindings[":{$field}"] = $value;
+        }
+        $sql .= "active = 0";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->runQuery($sql, $keyBindings);
+        $this->setObjectsByQuery();
+    }
+
+    /**
      * Load data from the database based on a query
      *
      * @param string $sql
@@ -156,23 +259,6 @@ class Repository
     }
 
     /**
-     * Update an object in the repository
-     *
-     * @param object $object
-     * @return bool
-     */
-    public function update(object $object): bool
-    {
-        foreach ($this->objects as $key => $value) {
-            if ($value->id === $object->id) {
-                $this->objects[$key] = $object;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Save an object
      *
      * @param object $object
@@ -181,14 +267,56 @@ class Repository
      */
     public function save(object $object): bool
     {
-        if ($object->id === 0) {
-            $result = $this->insertIntoDB($object);
-        } elseif ($object->id > 0) {
-            $result = $this->updateIntoDB($object);
+        if (count($this->primaryKey) === 1) {
+            $primaryKey = $this->primaryKey[0];
+            if ($object->$primaryKey === 0) {
+                return $this->insertIntoDB($object);
+            } elseif ($object->$primaryKey > 0) {
+                return $this->updateIntoDB($object);
+            } else {
+                throw new Exception('Invalid value for primary key');
+            }
+        } elseif (count($this->primaryKey) > 1) {
+            foreach ($this->objects as $key => $value) {
+                $found = true;
+                foreach ($this->primaryKey as $primKey) {
+                    if ($value->$primKey !== $object->$primKey) {
+                        $found = false;
+                        break;
+                    }
+                }
+                if ($found) {
+                    return $this->updateIntoDB($object);
+                }
+            }
+            return $this->insertIntoDB($object);
         } else {
-            throw new Exception('Invalid id');
+            throw new Exception('Invalid primary key');
         }
-        return $result;
+    }
+
+    /**
+     * Update an object in the repository
+     *
+     * @param object $object
+     * @return bool
+     */
+    public function update(object $object): bool
+    {
+        foreach ($this->objects as $key => $value) {
+            $found = true;
+            foreach ($this->primaryKey as $primKey) {
+                if ($value->$primKey !== $object->$primKey) {
+                    $found = false;
+                    break;
+                }
+            }
+            if ($found) {
+                $this->objects[$key] = $object;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -199,14 +327,16 @@ class Repository
      */
     public function saveAll(): bool
     {
-        $result = true;
+        $this->database->beginTransaction();
         foreach ($this->objects as $object) {
             $result = $this->save($object);
             if (!$result) {
-                break;
+                $this->database->rollBack();
+                return false;
             }
         }
-        return $result;
+        $this->database->commit();
+        return true;
     }
 
     /**
@@ -245,6 +375,65 @@ class Repository
     }
 
     /**
+     * Delete an object from the database based on the primary keys
+     *
+     * @param array $primaryKeyValue
+     * @param bool $softDelete
+     * @param string $message
+     * @return void
+     */
+    public function deleteByPrimaryKey(array $primaryKeyValue, bool $softDelete = false, string $message = ''): void
+    {
+        $sql = "DELETE FROM {$this->table} WHERE ";
+        $count = 0;
+        foreach ($this->primaryKey as $key) {
+            $sql .= "{$key} = :{$key} AND ";
+            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
+            $count++;
+        }
+        $sql = rtrim($sql, ' AND ');
+        if ($softDelete) {
+            $sql = "UPDATE {$this->table} SET active = 0 WHERE ";
+            $count = 0;
+            foreach ($this->primaryKey as $key) {
+                $sql .= "{$key} = :{$key} AND ";
+                $keyBindings[":{$key}"] = $primaryKeyValue[$count];
+                $count++;
+            }
+            if ($message !== '') {
+                $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE ";
+                $count = 0;
+                foreach ($this->primaryKey as $key) {
+                    $sql .= "{$key} = :{$key} AND ";
+                    $keyBindings[":{$key}"] = $primaryKeyValue[$count];
+                    $count++;
+                }
+                $keyBindings[':message'] = $message;
+            }
+        }
+        $this->database->runQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Undelete an object from the database based on the primary keys
+     *
+     * @param array $primaryKeyValue
+     * @return void
+     */
+    public function undeleteByPrimaryKey(array $primaryKeyValue): void
+    {
+        $sql = "UPDATE {$this->table} SET active = 1 WHERE ";
+        $count = 0;
+        foreach ($this->primaryKey as $key) {
+            $sql .= "{$key} = :{$key} AND ";
+            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
+            $count++;
+        }
+        $sql = rtrim($sql, ' AND ');
+        $this->database->runQuery($sql, $keyBindings);
+    }
+
+    /**
      * Insert an object into the database
      *
      * @param object $object
@@ -276,16 +465,21 @@ class Repository
     private function updateIntoDB(object $object): bool
     {
         $fields = '';
+        $keyBindings = [];
         foreach ($object as $key => $value) {
-            if ($key === 'id') {
+            if (in_array($key, $this->primaryKey)) {
                 continue;
             }
             $fields .= $key . ' = :' . $key . ', ';
             $keyBindings[':' . $key] = $value;
         }
         $fields = rtrim($fields, ', ');
-        $sql = "UPDATE {$this->table} SET {$fields} WHERE id = :id";
-        $keyBindings[':id'] = $object->id;
+        $sql = "UPDATE {$this->table} SET {$fields} WHERE ";
+        foreach ($this->primaryKey as $key) {
+            $sql .= "{$key} = :{$key} AND ";
+            $keyBindings[":{$key}"] = $object->$key;
+        }
+        $sql = rtrim($sql, ' AND ');
         return $this->database->runQuery($sql, $keyBindings);
     }
 
@@ -329,6 +523,29 @@ class Repository
     {
         foreach ($this->objects as $object) {
             if ($object->id === $id) {
+                return $object;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get object by primary key
+     *
+     * @param array $primaryKeyValue
+     * @return object|false
+     */
+    public function getObjectByPrimaryKey(array $primaryKeyValue): object|false
+    {
+        foreach ($this->objects as $object) {
+            $found = true;
+            foreach ($this->primaryKey as $key) {
+                if ($object->$key !== $primaryKeyValue[$key]) {
+                    $found = false;
+                    break;
+                }
+            }
+            if ($found) {
                 return $object;
             }
         }

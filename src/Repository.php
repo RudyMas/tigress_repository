@@ -10,7 +10,7 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.1.0
+ * @version 1.1.1
  * @lastmodified 2024-09-04
  * @package Tigress\Repository
  */
@@ -29,7 +29,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.1.0';
+        return '1.1.1';
     }
 
     /**
@@ -44,7 +44,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql);
+        $this->database->selectQuery($sql);
         $this->setObjectsByQuery();
     }
 
@@ -60,7 +60,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql);
+        $this->database->selectQuery($sql);
         $this->setObjectsByQuery();
     }
 
@@ -76,7 +76,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql);
+        $this->database->selectQuery($sql);
         $this->setObjectsByQuery();
     }
 
@@ -94,7 +94,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $keyBindings = [':id' => $id];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -118,7 +118,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -137,7 +137,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $keyBindings = [':value' => $value];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -156,7 +156,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $keyBindings = [':value' => $value];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -175,7 +175,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $keyBindings = [':value' => $value];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -197,7 +197,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -219,7 +219,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -241,7 +241,7 @@ class Repository
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -254,7 +254,7 @@ class Repository
      */
     public function loadByQuery(string $sql, array $keyBindings = []): void
     {
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
         $this->setObjectsByQuery();
     }
 
@@ -358,7 +358,7 @@ class Repository
             }
         }
         $keyBindings = [':id' => $id];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -371,7 +371,7 @@ class Repository
     {
         $sql = "UPDATE {$this->table} SET active = 1 WHERE id = :id";
         $keyBindings = [':id' => $id];
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -411,7 +411,7 @@ class Repository
                 $keyBindings[':message'] = $message;
             }
         }
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -430,7 +430,7 @@ class Repository
             $count++;
         }
         $sql = rtrim($sql, ' AND ');
-        $this->database->runQuery($sql, $keyBindings);
+        $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -453,7 +453,7 @@ class Repository
         $fields = rtrim($fields, ', ');
         $values = rtrim($values, ', ');
         $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$values})";
-        return $this->database->runQuery($sql, $keyBindings);
+        return $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -480,7 +480,7 @@ class Repository
             $keyBindings[":{$key}"] = $object->$key;
         }
         $sql = rtrim($sql, ' AND ');
-        return $this->database->runQuery($sql, $keyBindings);
+        return $this->database->selectQuery($sql, $keyBindings);
     }
 
     /**
@@ -578,7 +578,7 @@ class Repository
     private function setObjectsByQuery(): void
     {
         $data = $this->database->fetchAll();
-        $loadModel = '\\Model\\' . $this->model;
+        $loadModel = new $this->model;
         foreach ($data as $row) {
             $this->objects[] = new $loadModel($row);
         }

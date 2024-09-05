@@ -10,7 +10,7 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.1.2
+ * @version 1.1.3
  * @lastmodified 2024-09-04
  * @package Tigress\Repository
  */
@@ -20,6 +20,7 @@ class Repository
     protected Database $database;
     protected string $table;
     protected array $primaryKey;
+    protected bool $autoload = false;
     private array $objects = [];
 
     /**
@@ -29,7 +30,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.1.2';
+        return '1.1.3';
     }
 
     /**
@@ -579,7 +580,11 @@ class Repository
     {
         $data = $this->database->fetchAll();
         foreach ($data as $row) {
-            $this->objects[] = new $this->model($row);
+            if ($this->autoload) {
+                $this->objects[] = new $this->model($this->database, $this->table, $row);
+            } else {
+                $this->objects[] = new $this->model($row);
+            }
         }
     }
 }

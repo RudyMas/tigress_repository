@@ -10,16 +10,16 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.1.1
+ * @version 1.1.2
  * @lastmodified 2024-09-04
  * @package Tigress\Repository
  */
 class Repository
 {
-    private string $model;
-    private Database $database;
-    private string $table;
-    private array $primaryKey;
+    protected string $model;
+    protected Database $database;
+    protected string $table;
+    protected array $primaryKey;
     private array $objects = [];
 
     /**
@@ -29,7 +29,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.1.1';
+        return '1.1.2';
     }
 
     /**
@@ -578,9 +578,8 @@ class Repository
     private function setObjectsByQuery(): void
     {
         $data = $this->database->fetchAll();
-        $loadModel = new $this->model;
         foreach ($data as $row) {
-            $this->objects[] = new $loadModel($row);
+            $this->objects[] = new $this->model($row);
         }
     }
 }

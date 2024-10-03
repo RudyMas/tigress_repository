@@ -10,8 +10,8 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.1.3
- * @lastmodified 2024-09-04
+ * @version 1.2.0
+ * @lastmodified 2024-10-03
  * @package Tigress\Repository
  */
 class Repository
@@ -30,7 +30,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.1.3';
+        return '1.2.0';
     }
 
     /**
@@ -578,12 +578,14 @@ class Repository
      */
     private function setObjectsByQuery(): void
     {
+        $newModel = 'Model\\' . $this->model;
+
         $data = $this->database->fetchAll();
         foreach ($data as $row) {
             if ($this->autoload) {
-                $this->objects[] = new $this->model($this->database, $this->table, $row);
+                $this->objects[] = new $this->$newModel($this->database, $this->table, $row);
             } else {
-                $this->objects[] = new $this->model($row);
+                $this->objects[] = new $this->$newModel($row);
             }
         }
     }

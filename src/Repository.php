@@ -10,8 +10,8 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.2.0
- * @lastmodified 2024-10-03
+ * @version 1.2.1
+ * @lastmodified 2024-10-04
  * @package Tigress\Repository
  */
 class Repository
@@ -30,7 +30,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.2.0';
+        return '1.2.1';
     }
 
     /**
@@ -583,9 +583,9 @@ class Repository
         $data = $this->database->fetchAll();
         foreach ($data as $row) {
             if ($this->autoload) {
-                $this->objects[] = new $this->$newModel($this->database, $this->table, $row);
+                $this->objects[] = new $newModel($this->database, $this->table, $row);
             } else {
-                $this->objects[] = new $this->$newModel($row);
+                $this->objects[] = new $newModel($row);
             }
         }
     }

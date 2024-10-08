@@ -315,6 +315,9 @@ class Repository
             if ($found) {
                 $this->objects[$key] = $object;
                 return true;
+            } else {
+                $this->insertIntoDB($object);
+                return true;
             }
         }
         return false;

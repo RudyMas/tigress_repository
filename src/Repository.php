@@ -10,7 +10,7 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.3.0
+ * @version 1.3.1
  * @lastmodified 2024-10-08
  * @package Tigress\Repository
  */
@@ -30,7 +30,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.3.0';
+        return '1.3.1';
     }
 
     /**
@@ -512,7 +512,12 @@ class Repository
      */
     public function getFirstObject(): object
     {
-        return $this->objects[0];
+        if (isset($this->objects[0])) {
+            return $this->objects[0];
+        } else {
+            $newModel = 'Model\\' . $this->model;
+            return new $newModel($this->database, $this->table);
+        }
     }
 
     /**

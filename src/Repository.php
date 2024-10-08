@@ -10,8 +10,8 @@ use Exception;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.2.1
- * @lastmodified 2024-10-04
+ * @version 1.3.0
+ * @lastmodified 2024-10-08
  * @package Tigress\Repository
  */
 class Repository
@@ -30,7 +30,7 @@ class Repository
      */
     public static function version(): string
     {
-        return '1.2.1';
+        return '1.3.0';
     }
 
     /**
@@ -46,7 +46,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -62,7 +62,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -78,7 +78,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -96,7 +96,7 @@ class Repository
         }
         $keyBindings = [':id' => $id];
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -120,7 +120,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -139,7 +139,7 @@ class Repository
         }
         $keyBindings = [':value' => $value];
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -158,7 +158,7 @@ class Repository
         }
         $keyBindings = [':value' => $value];
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -177,7 +177,7 @@ class Repository
         }
         $keyBindings = [':value' => $value];
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -199,7 +199,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -221,7 +221,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -243,7 +243,7 @@ class Repository
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -256,7 +256,7 @@ class Repository
     public function loadByQuery(string $sql, array $keyBindings = []): void
     {
         $this->database->selectQuery($sql, $keyBindings);
-        $this->setObjectsByQuery();
+        $this->setObjects();
     }
 
     /**
@@ -489,9 +489,20 @@ class Repository
      *
      * @return array
      */
-    public function getAllObject(): array
+    public function getObjects(): array
     {
         return $this->objects;
+    }
+
+
+    /**
+     * Get all objects (alias for getObjects)
+     *
+     * @return array
+     */
+    public function getAllObject(): array
+    {
+        return $this->getObjects();
     }
 
     /**
@@ -572,11 +583,11 @@ class Repository
     }
 
     /**
-     * Create a list of objects based on the query
+     * Create a list of objects
      *
      * @return void
      */
-    private function setObjectsByQuery(): void
+    private function setObjects(): void
     {
         $newModel = 'Model\\' . $this->model;
 

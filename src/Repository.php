@@ -10,8 +10,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.0
- * @lastmodified 2024-10-08
+ * @version 1.5.1
+ * @lastmodified 2024-10-09
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -21,6 +21,7 @@ class Repository implements Iterator
     protected string $table;
     protected array $primaryKey;
     protected bool $autoload = false;
+    protected bool $softDelete = false;
     private Database $database;
     private array $fields = [];
     private array $objects = [];
@@ -33,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.0';
+        return '1.5.1';
     }
 
     public function __construct()
@@ -232,14 +233,13 @@ class Repository implements Iterator
      * Delete object by id in the database
      *
      * @param int $id
-     * @param bool $softDelete
      * @param string $message
      * @return void
      */
-    public function deleteById(int $id, bool $softDelete = false, string $message = ''): void
+    public function deleteById(int $id, string $message = ''): void
     {
         $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        if ($softDelete) {
+        if ($this->softDelete) {
             $sql = "UPDATE {$this->table} SET active = 0 WHERE id = :id";
             if ($message !== '') {
                 $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE id = :id";
@@ -267,11 +267,10 @@ class Repository implements Iterator
      * Delete object by primary key in the database
      *
      * @param array $primaryKeyValue
-     * @param bool $softDelete
      * @param string $message
      * @return void
      */
-    public function deleteByPrimaryKey(array $primaryKeyValue, bool $softDelete = false, string $message = ''): void
+    public function deleteByPrimaryKey(array $primaryKeyValue, string $message = ''): void
     {
         $sql = "DELETE FROM {$this->table} WHERE ";
         $count = 0;
@@ -281,7 +280,7 @@ class Repository implements Iterator
             $count++;
         }
         $sql = rtrim($sql, ' AND ');
-        if ($softDelete) {
+        if ($this->softDelete) {
             $sql = "UPDATE {$this->table} SET active = 0 WHERE ";
             $count = 0;
             foreach ($this->primaryKey as $key) {

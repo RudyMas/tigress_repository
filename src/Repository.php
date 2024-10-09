@@ -10,7 +10,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.4
+ * @version 1.5.5
  * @lastmodified 2024-10-09
  * @package Tigress\Repository
  */
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.4';
+        return '1.5.5';
     }
 
     public function __construct()
@@ -139,9 +139,22 @@ class Repository implements Iterator
     }
 
     /**
+     * Load data from the database based on the query
+     *
+     * @return void
+     */
+    public function new(): void
+    {
+        $Model = 'Model\\' . $this->model;
+        $newModel = new $Model();
+        $newModel->initiateModel($this->fields);
+        $this->position = count($this->objects);
+        $this->objects[$this->position] = $newModel;
+    }
+
+    /**
      * Save the object
      *
-     * @param object $object
      * @return void
      */
     public function save(): void

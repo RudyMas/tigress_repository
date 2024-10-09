@@ -10,7 +10,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.2
+ * @version 1.5.3
  * @lastmodified 2024-10-09
  * @package Tigress\Repository
  */
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.2';
+        return '1.5.3';
     }
 
     public function __construct()
@@ -444,6 +444,16 @@ class Repository implements Iterator
     public function count(): int
     {
         return count($this->objects);
+    }
+
+    /**
+     * Check if the objects are empty
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return empty($this->objects);
     }
 
     /**

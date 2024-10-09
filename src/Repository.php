@@ -565,13 +565,6 @@ class Repository implements Iterator
         $sql = rtrim($sql, ', ') . ') ';
         $values = rtrim($values, ', ') . ')';
         $sql .= $values;
-
-        print('<pre>');
-        print_r($sql);
-        print_r($keyBindings);
-        print('</pre>');
-        exit;
-
         $this->database->insertQuery($sql, $keyBindings);
     }
 

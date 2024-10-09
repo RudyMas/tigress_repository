@@ -10,7 +10,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.3
+ * @version 1.5.4
  * @lastmodified 2024-10-09
  * @package Tigress\Repository
  */
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.3';
+        return '1.5.4';
     }
 
     public function __construct()
@@ -144,8 +144,9 @@ class Repository implements Iterator
      * @param object $object
      * @return void
      */
-    public function save(object $object): void
+    public function save(): void
     {
+        $object = $this->current();
         $this->database->beginTransaction();
         if ($this->exists($object)) {
             $this->updateObject($object);
@@ -564,6 +565,13 @@ class Repository implements Iterator
         $sql = rtrim($sql, ', ') . ') ';
         $values = rtrim($values, ', ') . ')';
         $sql .= $values;
+
+        print('<pre>');
+        print_r($sql);
+        print_r($keyBindings);
+        print('</pre>');
+        exit;
+
         $this->database->insertQuery($sql, $keyBindings);
     }
 
@@ -597,7 +605,7 @@ class Repository implements Iterator
      */
     private function exists(object $object): bool
     {
-        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE ";
+        $sql = "SELECT COUNT(*) as aantal FROM {$this->table} WHERE ";
         foreach ($this->primaryKey as $key) {
             $sql .= "{$key} = :{$key} AND ";
             $keyBindings[":{$key}"] = $object->$key;
@@ -605,7 +613,7 @@ class Repository implements Iterator
         $sql = rtrim($sql, ' AND ');
         $this->database->selectQuery($sql, $keyBindings);
         $count = $this->database->fetchCurrent();
-        return $count > 0;
+        return $count->aantal > 0;
     }
 
     /**

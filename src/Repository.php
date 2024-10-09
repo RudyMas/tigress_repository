@@ -10,7 +10,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.1
+ * @version 1.5.2
  * @lastmodified 2024-10-09
  * @package Tigress\Repository
  */
@@ -34,13 +34,15 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.1';
+        return '1.5.2';
     }
 
     public function __construct()
     {
         $this->database = DATABASE[$this->dbName];
-        $this->loadTableInformation();
+        if ($this->autoload) {
+            $this->loadTableInformation();
+        }
     }
 
     /**
@@ -594,5 +596,40 @@ class Repository implements Iterator
         $this->database->selectQuery($sql, $keyBindings);
         $count = $this->database->fetchCurrent();
         return $count > 0;
+    }
+
+    /**
+     * Set the fields
+     *
+     * The fields are the columns of the table
+     * The Array is a multidimensional array with the following structure:
+     * [
+     *     'column_name' => [
+     *         'value' => 'default_value',
+     *         'type' => 'integer'
+     *     ],
+     *     'column_name' => [
+     *         'value' => 'default_value',
+     *         'type' => 'string'
+     *     ],
+     *     ...
+     * ]
+     *
+     * @param array $fields
+     * @return void
+     */
+    public function setFields(array $fields): void
+    {
+        $this->fields = $fields;
+    }
+
+    /**
+     * Return the fields
+     *
+     * @return array
+     */
+    public function getFields(): array
+    {
+        return $this->fields;
     }
 }

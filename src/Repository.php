@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.7
+ * @version 1.5.8
  * @lastmodified 2024-10-10
  * @package Tigress\Repository
  */
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.7';
+        return '1.5.8';
     }
 
     public function __construct()
@@ -156,11 +156,11 @@ class Repository implements Iterator
     /**
      * Save the object
      *
+     * @param object $object
      * @return void
      */
-    public function save(): void
+    public function save(object $object): void
     {
-        $object = $this->current();
         $this->database->beginTransaction();
         if ($this->exists($object)) {
             $this->updateObject($object);

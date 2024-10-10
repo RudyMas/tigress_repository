@@ -2,6 +2,7 @@
 
 namespace Tigress;
 
+use Exception;
 use Iterator;
 
 /**
@@ -10,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.5
- * @lastmodified 2024-10-09
+ * @version 1.5.6
+ * @lastmodified 2024-10-10
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.5';
+        return '1.5.6';
     }
 
     public function __construct()
@@ -348,6 +349,27 @@ class Repository implements Iterator
     public function deleteByQuery(string $sql, array $keyBindings = []): void
     {
         $this->database->deleteQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Completely delete the content of the table
+     *
+     * @param bool $areYouSure
+     * @return void
+     * @throws Exception
+     */
+    public function truncate(bool $areYouSure = false): void
+    {
+        if (!$areYouSure) {
+            throw new Exception('You must be sure to truncate the table!');
+        }
+        if ($this->softDelete) {
+            $sql = "UPDATE {$this->table} SET active = 0";
+            $this->database->update($sql);
+        } else {
+            $sql = "TRUNCATE TABLE {$this->table}";
+            $this->database->delete($sql);
+        }
     }
 
     /**

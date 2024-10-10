@@ -362,7 +362,7 @@ class Repository implements Iterator
     public function truncate(bool $areYouSure = false, bool $overruleSoftDelete = false): void
     {
         if (!$areYouSure) {
-            throw new Exception('You must be sure to truncate the table!');
+            throw new Exception('You must be sure to truncate the table! See documentation for more information.');
         }
         if ($this->softDelete && !$overruleSoftDelete) {
             $sql = "UPDATE {$this->table} SET active = 0";

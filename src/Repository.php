@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.8
- * @lastmodified 2024-10-10
+ * @version 1.5.9
+ * @lastmodified 2024-10-11
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.8';
+        return '1.5.9';
     }
 
     public function __construct()
@@ -591,6 +591,10 @@ class Repository implements Iterator
      */
     private function saveObject(object $object): void
     {
+        if (isset($object->created)) {
+            $object->created = date('Y-m-d H:i:s');
+        }
+
         $sql = "INSERT INTO {$this->table} (";
         $values = 'VALUES (';
         foreach ($object as $key => $value) {
@@ -612,6 +616,10 @@ class Repository implements Iterator
      */
     private function updateObject(object $object): void
     {
+        if (isset($object->modified)) {
+            $object->modified = date('Y-m-d H:i:s');
+        }
+
         $sql = "UPDATE {$this->table} SET ";
         foreach ($object as $key => $value) {
             $sql .= "{$key} = :{$key}, ";

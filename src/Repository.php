@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.11
- * @lastmodified 2024-10-22
+ * @version 1.5.12
+ * @lastmodified 2024-11-05
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.22';
+        return '1.5.12';
     }
 
     public function __construct()
@@ -55,6 +55,38 @@ class Repository implements Iterator
     public function loadAll(string $orderBy = ''): void
     {
         $sql = "SELECT * FROM {$this->table}";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
+     * Load all data from the database of active records
+     *
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllActive(string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE active = 1";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
+     * Load all data from the database of inactive records
+     *
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllInactive(string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE active = 0";
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }

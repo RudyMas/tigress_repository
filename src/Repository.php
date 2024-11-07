@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.12
- * @lastmodified 2024-11-05
+ * @version 1.5.13
+ * @lastmodified 2024-11-07
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.12';
+        return '1.5.13';
     }
 
     public function __construct()
@@ -433,6 +433,22 @@ class Repository implements Iterator
     }
 
     /**
+     * Get data from the loaded objects
+     *
+     * @param int $id
+     * @return object|bool
+     */
+    public function get(int $id): object|bool
+    {
+        foreach ($this as $object) {
+            if ($object->id === $id) {
+                return $object;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return the model
      *
      * @return mixed
@@ -730,5 +746,25 @@ class Repository implements Iterator
     public function getFields(): array
     {
         return $this->fields;
+    }
+
+    /**
+     * Create the options for the select
+     *
+     * @param int $id
+     * @param bool|string $text
+     * @param string $value
+     * @param string $display
+     * @return string
+     */
+    protected function createOptions(int $id, bool|string $text, string $display, string $value = 'id'): string
+    {
+        $options = ($text !== false) ? "<option value='0'>{$text}</option>" : '';
+        foreach ($this as $row) {
+            $selected = ($row->$value == $id) ? ' selected' : '';
+            $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
+        }
+
+        return $options;
     }
 }

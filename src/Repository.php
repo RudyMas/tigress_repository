@@ -759,7 +759,7 @@ class Repository implements Iterator
      */
     protected function createOptions(int $id, bool|string $text, string $display, string $value = 'id'): string
     {
-        $options = ($text !== false) ? "<option value='0'>{$text}</option>" : '';
+        $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
         foreach ($this as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
             $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";

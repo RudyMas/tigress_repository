@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.13
- * @lastmodified 2024-11-07
+ * @version 1.5.14
+ * @lastmodified 2024-11-08
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.13';
+        return '1.5.14';
     }
 
     public function __construct()
@@ -325,7 +325,7 @@ class Repository implements Iterator
         $sql = "DELETE FROM {$this->table} WHERE ";
         $count = 0;
         foreach ($this->primaryKey as $key) {
-            $sql .= "{$key} = :{$key} AND ";
+            $sql .= "`{$key}` = :{$key} AND ";
             $keyBindings[":{$key}"] = $primaryKeyValue[$count];
             $count++;
         }
@@ -334,7 +334,7 @@ class Repository implements Iterator
             $sql = "UPDATE {$this->table} SET active = 0 WHERE ";
             $count = 0;
             foreach ($this->primaryKey as $key) {
-                $sql .= "{$key} = :{$key} AND ";
+                $sql .= "`{$key}` = :{$key} AND ";
                 $keyBindings[":{$key}"] = $primaryKeyValue[$count];
                 $count++;
             }
@@ -342,7 +342,7 @@ class Repository implements Iterator
                 $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE ";
                 $count = 0;
                 foreach ($this->primaryKey as $key) {
-                    $sql .= "{$key} = :{$key} AND ";
+                    $sql .= "`{$key}` = :{$key} AND ";
                     $keyBindings[":{$key}"] = $primaryKeyValue[$count];
                     $count++;
                 }
@@ -364,7 +364,7 @@ class Repository implements Iterator
         $sql = "UPDATE {$this->table} SET active = 1 WHERE ";
         $count = 0;
         foreach ($this->primaryKey as $key) {
-            $sql .= "{$key} = :{$key} AND ";
+            $sql .= "`{$key}` = :{$key} AND ";
             $keyBindings[":{$key}"] = $primaryKeyValue[$count];
             $count++;
         }
@@ -658,7 +658,7 @@ class Repository implements Iterator
         $sql = "INSERT INTO {$this->table} (";
         $values = 'VALUES (';
         foreach ($object as $key => $value) {
-            $sql .= "{$key}, ";
+            $sql .= "`{$key}`, ";
             $values .= ":{$key}, ";
             $keyBindings[":{$key}"] = $value;
         }
@@ -682,12 +682,12 @@ class Repository implements Iterator
 
         $sql = "UPDATE {$this->table} SET ";
         foreach ($object as $key => $value) {
-            $sql .= "{$key} = :{$key}, ";
+            $sql .= "`{$key}` = :{$key}, ";
             $keyBindings[":{$key}"] = $value;
         }
         $sql = rtrim($sql, ', ') . ' WHERE ';
         foreach ($this->primaryKey as $key) {
-            $sql .= "{$key} = :{$key} AND ";
+            $sql .= "`{$key}` = :{$key} AND ";
             $keyBindings[":{$key}"] = $object->$key;
         }
         $sql = rtrim($sql, ' AND ');
@@ -704,7 +704,7 @@ class Repository implements Iterator
     {
         $sql = "SELECT COUNT(*) as aantal FROM {$this->table} WHERE ";
         foreach ($this->primaryKey as $key) {
-            $sql .= "{$key} = :{$key} AND ";
+            $sql .= "`{$key}` = :{$key} AND ";
             $keyBindings[":{$key}"] = $object->$key;
         }
         $sql = rtrim($sql, ' AND ');

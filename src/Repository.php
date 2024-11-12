@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.14
- * @lastmodified 2024-11-08
+ * @version 1.5.15
+ * @lastmodified 2024-11-12
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.14';
+        return '1.5.15';
     }
 
     public function __construct()
@@ -198,7 +198,9 @@ class Repository implements Iterator
             $this->updateObject($object);
         } else {
             $this->saveObject($object);
-            $object->id = $this->database->lastInsertId();
+            if (isset($object->id)) {
+                $object->id = $this->database->lastInsertId();
+            }
         }
         $this->database->commit();
     }

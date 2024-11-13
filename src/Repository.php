@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.16
+ * @version 1.5.17
  * @lastmodified 2024-11-13
  * @package Tigress\Repository
  */
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.16';
+        return '1.5.17';
     }
 
     public function __construct()
@@ -228,6 +228,19 @@ class Repository implements Iterator
             }
         }
         return false;
+    }
+
+    /**
+     * Update the current object in the repository
+     *
+     * @param object $object
+     * @return void
+     */
+    public function updateCurrent(object $object): void
+    {
+        foreach ($object as $key => $value) {
+            $this->objects[$this->position]->$key = $value;
+        }
     }
 
     /**

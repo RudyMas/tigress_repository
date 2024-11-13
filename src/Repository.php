@@ -11,8 +11,8 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.15
- * @lastmodified 2024-11-12
+ * @version 1.5.16
+ * @lastmodified 2024-11-13
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -35,7 +35,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.15';
+        return '1.5.16';
     }
 
     public function __construct()
@@ -122,11 +122,12 @@ class Repository implements Iterator
     public function loadByPrimaryKey(array $primaryKeyValue, string $orderBy = ''): void
     {
         $sql = "SELECT * FROM {$this->table} WHERE ";
-        $count = 0;
         foreach ($this->primaryKey as $key) {
+            if (!isset($primaryKeyValue[$key])) {
+                continue;
+            }
             $sql .= "{$key} = :{$key} AND ";
-            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
-            $count++;
+            $keyBindings[":{$key}"] = $primaryKeyValue[$key];
         }
         $sql = rtrim($sql, ' AND ');
         if ($orderBy !== '') {
@@ -325,28 +326,31 @@ class Repository implements Iterator
     public function deleteByPrimaryKey(array $primaryKeyValue, string $message = ''): void
     {
         $sql = "DELETE FROM {$this->table} WHERE ";
-        $count = 0;
         foreach ($this->primaryKey as $key) {
+            if (!isset($primaryKeyValue[$key])) {
+                continue;
+            }
             $sql .= "`{$key}` = :{$key} AND ";
-            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
-            $count++;
+            $keyBindings[":{$key}"] = $primaryKeyValue[$key];
         }
         $sql = rtrim($sql, ' AND ');
         if ($this->softDelete) {
             $sql = "UPDATE {$this->table} SET active = 0 WHERE ";
-            $count = 0;
             foreach ($this->primaryKey as $key) {
+                if (!isset($primaryKeyValue[$key])) {
+                    continue;
+                }
                 $sql .= "`{$key}` = :{$key} AND ";
-                $keyBindings[":{$key}"] = $primaryKeyValue[$count];
-                $count++;
+                $keyBindings[":{$key}"] = $primaryKeyValue[$key];
             }
             if ($message !== '') {
                 $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE ";
-                $count = 0;
                 foreach ($this->primaryKey as $key) {
+                    if (!isset($primaryKeyValue[$key])) {
+                        continue;
+                    }
                     $sql .= "`{$key}` = :{$key} AND ";
-                    $keyBindings[":{$key}"] = $primaryKeyValue[$count];
-                    $count++;
+                    $keyBindings[":{$key}"] = $primaryKeyValue[$key];
                 }
                 $keyBindings[':message'] = $message;
             }
@@ -364,11 +368,12 @@ class Repository implements Iterator
     public function undeleteByPrimaryKey(array $primaryKeyValue): void
     {
         $sql = "UPDATE {$this->table} SET active = 1 WHERE ";
-        $count = 0;
         foreach ($this->primaryKey as $key) {
+            if (!isset($primaryKeyValue[$key])) {
+                continue;
+            }
             $sql .= "`{$key}` = :{$key} AND ";
-            $keyBindings[":{$key}"] = $primaryKeyValue[$count];
-            $count++;
+            $keyBindings[":{$key}"] = $primaryKeyValue[$key];
         }
         $sql = rtrim($sql, ' AND ');
         $this->database->updateQuery($sql, $keyBindings);

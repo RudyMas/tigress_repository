@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.6.0
+ * @version 1.6.1
  * @lastmodified 2024-11-15
  * @package Tigress\Repository
  */
@@ -35,13 +35,13 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '1.5.17';
+        return '1.6.1';
     }
 
     public function __construct()
     {
         if (!is_null($this->dbName)) {
-            $this->dbName = DATABASE['default'];
+            $this->database = DATABASE[$this->dbName];
             if ($this->autoload) {
                 $this->loadTableInformation();
             }
@@ -773,13 +773,13 @@ class Repository implements Iterator
     /**
      * Create the options for the select
      *
-     * @param int $id
+     * @param mixed $id
      * @param bool|string $text
      * @param string $value
      * @param string $display
      * @return string
      */
-    protected function createOptions(int $id, bool|string $text, string $display, string $value = 'id'): string
+    protected function createOptions(mixed $id, bool|string $text, string $display, string $value = 'id'): string
     {
         $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
         foreach ($this as $row) {

@@ -16,7 +16,7 @@ use Exception;
  */
 class DataRepository extends Repository
 {
-    private object $data;
+    private array $data;
 
     /**
      * Get the version of the Repository
@@ -127,20 +127,6 @@ class DataRepository extends Repository
     }
 
     /**
-     * Load data from the database based on the query
-     *
-     * @return void
-     */
-    public function new(): void
-    {
-        $Model = 'Model\\' . $this->model;
-        $newModel = new $Model();
-        $newModel->initiateModel($this->fields);
-        $this->position = count($this->objects);
-        $this->objects[$this->position] = $newModel;
-    }
-
-    /**
      * Save the object at the current position
      *
      * @param object $object
@@ -150,77 +136,6 @@ class DataRepository extends Repository
     public function save(object &$object): void
     {
         throw new Exception('Object cannot be saved in this repository');
-    }
-
-    /**
-     * Update an object in the repository
-     *
-     * @param object $object
-     * @return bool
-     */
-    public function update(object $object): bool
-    {
-        foreach ($this->objects as $key => $value) {
-            $found = true;
-            foreach ($this->primaryKey as $primKey) {
-                if ($value->$primKey !== $object->$primKey) {
-                    $found = false;
-                    break;
-                }
-            }
-            if ($found) {
-                $this->objects[$key] = $object;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Update the current object in the repository
-     *
-     * @param object $object
-     * @return void
-     */
-    public function updateCurrent(object $object): void
-    {
-        foreach ($object as $key => $value) {
-            $this->objects[$this->position]->$key = $value;
-        }
-    }
-
-    /**
-     * Insert an object in the repository
-     *
-     * @param object $object
-     * @return void
-     */
-    public function insert(object $object): void
-    {
-        $this->objects[] = $object;
-    }
-
-    /**
-     * Delete an object from the repository
-     *
-     * @param object $object
-     * @return void
-     */
-    public function delete(object $object): void
-    {
-        foreach ($this->objects as $key => $value) {
-            $found = true;
-            foreach ($this->primaryKey as $primKey) {
-                if ($value->$primKey !== $object->$primKey) {
-                    $found = false;
-                    break;
-                }
-            }
-            if ($found) {
-                unset($this->objects[$key]);
-                break;
-            }
-        }
     }
 
     /**
@@ -252,6 +167,7 @@ class DataRepository extends Repository
      *
      * @param int $id
      * @return void
+     * @throws Exception
      */
     public function undeleteById(int $id): void
     {
@@ -336,124 +252,14 @@ class DataRepository extends Repository
     }
 
     /**
-     * Get data from the loaded objects
+     * Set the data
      *
-     * @param int $id
-     * @return object|bool
-     */
-    public function get(int $id): object|bool
-    {
-        foreach ($this as $object) {
-            if ($object->id === $id) {
-                return $object;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Return the model
-     *
-     * @return mixed
-     */
-    public function current(): mixed
-    {
-        return $this->objects[$this->position];
-    }
-
-    /**
-     * Move to the next object
-     *
+     * @param array $data
      * @return void
      */
-    public function next(): void
+    public function setData(array $data): void
     {
-        $this->position++;
-    }
-
-    /**
-     * Return the key of the current object
-     *
-     * @return mixed
-     */
-    public function key(): mixed
-    {
-        return $this->position;
-    }
-
-    /**
-     * Check if the current object is valid
-     *
-     * @return bool
-     */
-    public function valid(): bool
-    {
-        return isset($this->objects[$this->position]);
-    }
-
-    /**
-     * Rewind the Iterator to the first object
-     *
-     * @return void
-     */
-    public function rewind(): void
-    {
-        $this->position = 0;
-    }
-
-    /**
-     * Find data in the objects
-     *
-     * @param array $find
-     * @return array
-     */
-    public function find(array $find): array
-    {
-        $data = [];
-        foreach ($this->objects as $object) {
-            $found = true;
-            foreach ($find as $key => $value) {
-                if ($object->$key !== $value) {
-                    $found = false;
-                    break;
-                }
-            }
-            if ($found) {
-                $data[] = $object;
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Reset the objects
-     *
-     * @return void
-     */
-    public function reset(): void
-    {
-        $this->position = 0;
-        $this->objects = [];
-    }
-
-    /**
-     * Return the number of objects
-     *
-     * @return int
-     */
-    public function count(): int
-    {
-        return count($this->objects);
-    }
-
-    /**
-     * Check if the objects are empty
-     *
-     * @return bool
-     */
-    public function isEmpty(): bool
-    {
-        return empty($this->objects);
+        $this->data = json_decode(json_encode($data));
     }
 
     /**
@@ -467,55 +273,9 @@ class DataRepository extends Repository
 
         foreach ($this->data as $row) {
             $newModel = new $Model();
-            $newModel->initiateModel($this->fields);
+            $newModel->initiateModel(parent::getFields());
             $newModel->update($row);
-            $this->objects[] = $newModel;
+            $this->insert($newModel);
         }
-    }
-
-    /**
-     * Set the fields
-     *
-     * The fields are the columns of the table
-     * The Array is a multidimensional array with the following structure:
-     * [
-     *     'column_name' => [
-     *         'value' => 'default_value',
-     *         'type' => 'integer'
-     *     ],
-     *     'column_name' => [
-     *         'value' => 'default_value',
-     *         'type' => 'string'
-     *     ],
-     *     ...
-     * ]
-     *
-     * @param array $fields
-     * @return void
-     */
-    public function setFields(array $fields): void
-    {
-        $this->fields = $fields;
-    }
-
-    /**
-     * Return the fields
-     *
-     * @return array
-     */
-    public function getFields(): array
-    {
-        return $this->fields;
-    }
-
-    /**
-     * Set the data
-     *
-     * @param array $data
-     * @return void
-     */
-    public function setData(array $data): void
-    {
-        $this->data = (object) $data;
     }
 }

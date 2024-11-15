@@ -11,14 +11,14 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.5.17
- * @lastmodified 2024-11-13
+ * @version 1.6.0
+ * @lastmodified 2024-11-15
  * @package Tigress\Repository
  */
 class Repository implements Iterator
 {
     protected string $model;
-    protected string $dbName;
+    protected ?string $dbName;
     protected string $table;
     protected array $primaryKey;
     protected bool $autoload = false;
@@ -40,9 +40,11 @@ class Repository implements Iterator
 
     public function __construct()
     {
-        $this->database = DATABASE[$this->dbName];
-        if ($this->autoload) {
-            $this->loadTableInformation();
+        if (!is_null($this->dbName)) {
+            $this->dbName = DATABASE['default'];
+            if ($this->autoload) {
+                $this->loadTableInformation();
+            }
         }
     }
 

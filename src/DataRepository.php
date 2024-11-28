@@ -24,7 +24,7 @@ class DataRepository extends Repository
      */
     public static function version(): string
     {
-        return '2024.11.28.0';
+        return '2024.11.28';
     }
 
     /**

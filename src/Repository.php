@@ -803,8 +803,8 @@ class Repository implements Iterator
     {
         $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
         foreach ($data as $row) {
-            $selected = ($row[$value] == $id) ? ' selected' : '';
-            $options .= "<option value='{$row[$value]}'{$selected}>{$row[$display]}</option>";
+            $selected = ($row->$value == $id) ? ' selected' : '';
+            $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
         }
 
         return $options;

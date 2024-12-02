@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2024.11.28.0
+ * @version 2024.12.02.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2024.11.28';
+        return '2024.12.02';
     }
 
     public function __construct()
@@ -784,6 +784,27 @@ class Repository implements Iterator
         foreach ($this as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
             $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
+        }
+
+        return $options;
+    }
+
+    /**
+     * Create the options for the select based on data
+     *
+     * @param mixed $id
+     * @param bool|string $text
+     * @param string $display
+     * @param string $value
+     * @param array $data
+     * @return string
+     */
+    protected function createOptionsByData(mixed $id, bool|string $text, string $display, string $value = 'id', array $data = []): string
+    {
+        $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
+        foreach ($data as $row) {
+            $selected = ($row[$value] == $id) ? ' selected' : '';
+            $options .= "<option value='{$row[$value]}'{$selected}>{$row[$display]}</option>";
         }
 
         return $options;

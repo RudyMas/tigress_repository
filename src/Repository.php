@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2024.12.18.0
+ * @version 2024.12.19.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2024.12.18';
+        return '2024.12.19';
     }
 
     public function __construct()
@@ -572,6 +572,16 @@ class Repository implements Iterator
     public function isEmpty(): bool
     {
         return empty($this->objects);
+    }
+
+    /**
+     * Return the data as an array
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->objects;
     }
 
     /**

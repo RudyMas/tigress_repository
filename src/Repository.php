@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.03.0
+ * @version 2025.01.06.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.01.03';
+        return '2025.01.06';
     }
 
     public function __construct()
@@ -313,7 +313,7 @@ class Repository implements Iterator
                 $keyBindings[':message'] = $message;
             }
         }
-        $keyBindings = [':id' => $id];
+        $keyBindings[':id'] = $id;
         $this->database->deleteQuery($sql, $keyBindings);
     }
 
@@ -795,13 +795,7 @@ class Repository implements Iterator
      */
     protected function createOptions(mixed $id, bool|string $text, string $display, string $value = 'id'): string
     {
-        $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
-        foreach ($this as $row) {
-            $selected = ($row->$value == $id) ? ' selected' : '';
-            $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
-        }
-
-        return $options;
+        return $this->createOption($text, $value, $id, $display, $this);
     }
 
     /**
@@ -815,6 +809,19 @@ class Repository implements Iterator
      * @return string
      */
     protected function createOptionsByData(mixed $id, bool|string $text, string $display, string $value = 'id', array $data = []): string
+    {
+        return $this->createOption($text, $value, $id, $display, $data);
+    }
+
+    /**
+     * @param bool|string $text
+     * @param string $value
+     * @param mixed $id
+     * @param string $display
+     * @param Repository|array $data
+     * @return string
+     */
+    private function createOption(bool|string $text, string $value, mixed $id, string $display, Repository|array $data): string
     {
         $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
         foreach ($data as $row) {

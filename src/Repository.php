@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.06.1
+ * @version 2025.01.07.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.01.06';
+        return '2025.01.07';
     }
 
     public function __construct()
@@ -789,13 +789,22 @@ class Repository implements Iterator
      *
      * @param mixed $id
      * @param bool|string $text
-     * @param string $value
      * @param string $display
+     * @param string $value
+     * @param bool $onlyActive
+     * @param string $inactiveText
      * @return string
      */
-    protected function createOptions(mixed $id, bool|string $text, string $display, string $value = 'id'): string
+    protected function createOptions(
+        mixed $id,
+        bool|string $text,
+        string $display,
+        string $value = 'id',
+        bool $onlyActive = false,
+        string $inactiveText = ' - Inactive'
+    ): string
     {
-        return $this->createOption($text, $value, $id, $display, $this);
+        return $this->createOption($text, $value, $id, $display, $this, $onlyActive, $inactiveText);
     }
 
     /**
@@ -808,7 +817,13 @@ class Repository implements Iterator
      * @param array $data
      * @return string
      */
-    protected function createOptionsByData(mixed $id, bool|string $text, string $display, string $value = 'id', array $data = []): string
+    protected function createOptionsByData(
+        mixed $id,
+        bool|string $text,
+        string $display,
+        string $value = 'id',
+        array $data = []
+    ): string
     {
         return $this->createOption($text, $value, $id, $display, $data);
     }
@@ -819,14 +834,35 @@ class Repository implements Iterator
      * @param mixed $id
      * @param string $display
      * @param Repository|array $data
+     * @param bool $onlyActive
+     * @param string $inactiveText
      * @return string
      */
-    private function createOption(bool|string $text, string $value, mixed $id, string $display, Repository|array $data): string
+    private function createOption(
+        bool|string $text,
+        string $value,
+        mixed $id,
+        string $display,
+        Repository|array $data,
+        bool $onlyActive = false,
+        string $inactiveText = ' - Inactive'
+    ): string
     {
         $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
         foreach ($data as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
-            $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
+
+            if (property_exists($row, 'active')) {
+                $active = !($row->active == 0);
+            } else {
+                $active = true;
+            }
+
+            if (!empty($selected) || $active) {
+                $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
+            } elseif (!$onlyActive) {
+                $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}{$inactiveText}</option>";
+            }
         }
 
         return $options;

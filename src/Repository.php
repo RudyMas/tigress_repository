@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.16.0
+ * @version 2025.01.16.1
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -242,6 +242,18 @@ class Repository implements Iterator
         foreach ($object as $key => $value) {
             $this->objects[$this->position]->$key = $value;
         }
+    }
+
+    /**
+     * Update an object in the repository by sql query
+     *
+     * @param string $sql
+     * @param array $keyBindings
+     * @return void
+     */
+    public function updateByQuery(string $sql, array $keyBindings = []): void
+    {
+        $this->database->updateQuery($sql, $keyBindings);
     }
 
     /**

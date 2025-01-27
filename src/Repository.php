@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.16.1
+ * @version 2025.01.27.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.01.16';
+        return '2025.01.27';
     }
 
     public function __construct()
@@ -140,6 +140,7 @@ class Repository implements Iterator
 
     /**
      * Load data from the database based on the where clause
+     * The where clause is an array
      *
      * @param array $where
      * @param string $orderBy
@@ -153,6 +154,25 @@ class Repository implements Iterator
             $keyBindings[":{$key}"] = $value;
         }
         $sql = rtrim($sql, ' AND ');
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql, $keyBindings);
+        $this->createObjects();
+    }
+
+    /**
+     * Load data from the database based on the where clause
+     * The where clause is a string
+     *
+     * @param string $sqlWhere
+     * @param array $keyBindings
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadByWhereQuery(string $sqlWhere, array $keyBindings = [], string $orderBy = ''): void
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE {$sqlWhere}";
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }

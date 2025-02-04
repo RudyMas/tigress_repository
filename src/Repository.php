@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.27.0
+ * @version 2025.02.04.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.01.27';
+        return '2025.02.04';
     }
 
     public function __construct()
@@ -705,7 +705,9 @@ class Repository implements Iterator
     {
         if (preg_match('/int|tinyint|smallint|mediumint|bigint/', $type)) {
             return 'integer';
-        } elseif (preg_match('/float|double|decimal/', $type)) {
+        } elseif (preg_match('/double|decimal/', $type)) {
+            return 'double';
+        } elseif (str_contains($type, 'float')) {
             return 'float';
         } elseif (preg_match('/varchar|text|char|blob/', $type)) {
             return 'string';

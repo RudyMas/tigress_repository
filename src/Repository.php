@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.03.25.0
+ * @version 2025.05.08.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -713,6 +713,23 @@ class Repository implements Iterator
         }
 
         return $data;
+    }
+
+    /**
+     * Get the list of field values
+     *
+     * @param string $field
+     * @return array
+     */
+    public function getListOfField(string $field): array
+    {
+        $list = [];
+        foreach ($this->objects as $object) {
+            if (isset($object->$field)) {
+                $list[] = $object->$field;
+            }
+        }
+        return $list;
     }
 
     /**

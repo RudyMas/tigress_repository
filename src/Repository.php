@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.05.08.0
+ * @version 2025.05.14.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -1011,7 +1011,7 @@ class Repository implements Iterator
         string $inactiveText = ' - Inactive'
     ): string
     {
-        $options = (empty($text)) ? '' : "<option value=''>{$text}</option>";
+        $options = (empty($text)) ? '' : "<option value='-1'>{$text}</option>";
         foreach ($data as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
 

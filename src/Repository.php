@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.05.14.0
+ * @version 2025.05.19.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.03.25';
+        return '2025.05.19';
     }
 
     public function __construct()
@@ -634,7 +634,7 @@ class Repository implements Iterator
         foreach ($this->objects as $object) {
             $found = true;
             foreach ($find as $key => $value) {
-                if ($object->$key !== $value) {
+                if ($object->$key != $value) {
                     $found = false;
                     break;
                 }
@@ -657,7 +657,7 @@ class Repository implements Iterator
         foreach ($this->objects as $object) {
             $found = true;
             foreach ($find as $key => $value) {
-                if ($object->$key !== $value) {
+                if ($object->$key != $value) {
                     $found = false;
                     break;
                 }

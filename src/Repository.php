@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.05.19.0
+ * @version 2025.06.02.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.05.19';
+        return '2025.06.02';
     }
 
     public function __construct()
@@ -329,7 +329,7 @@ class Repository implements Iterator
     }
 
     /**
-     * Delete object by id in the database
+     * Delete an object by id in the database
      *
      * @param int $id
      * @param string $message
@@ -369,7 +369,7 @@ class Repository implements Iterator
     }
 
     /**
-     * Undelete object by id in the database
+     * Undelete an object by id in the database
      *
      * @param int $id
      * @return void
@@ -393,7 +393,7 @@ class Repository implements Iterator
     }
 
     /**
-     * Delete object by primary key in the database
+     * Delete an object by primary key in the database
      *
      * @param array $primaryKeyValue
      * @param string $message
@@ -457,7 +457,7 @@ class Repository implements Iterator
     }
 
     /**
-     * Undelete object by primary key in the database
+     * Undelete an object by primary key in the database
      *
      * @param array $primaryKeyValue
      * @return void
@@ -487,7 +487,7 @@ class Repository implements Iterator
     }
 
     /**
-     * Delete object by where clause in the database
+     * Delete an object by where clause in the database
      *
      * @param string $sql
      * @param array $keyBindings
@@ -837,7 +837,7 @@ class Repository implements Iterator
         }
 
         if (isset($object->created_user_id)) {
-            $object->created_user_id = $_SESSION['user']['id'];
+            $object->created_user_id = $_SESSION['user']['id'] ?? 0;
         }
 
         $sql = "INSERT INTO {$this->table} (";
@@ -866,7 +866,7 @@ class Repository implements Iterator
         }
 
         if (isset($object->modified_user_id)) {
-            $object->modified_user_id = $_SESSION['user']['id'];
+            $object->modified_user_id = $_SESSION['user']['id'] ?? 0;
         }
 
         $sql = "UPDATE {$this->table} SET ";

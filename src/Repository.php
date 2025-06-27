@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.06.02.0
+ * @version 2025.06.27.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.06.02';
+        return '2025.06.27';
     }
 
     public function __construct()
@@ -992,6 +992,10 @@ class Repository implements Iterator
     }
 
     /**
+     * Create the options for the select
+     * This method is used to create the options for a select element
+     * It can be used with a Repository or an array of data
+     *
      * @param bool|string $text
      * @param string $value
      * @param mixed $id
@@ -1021,10 +1025,11 @@ class Repository implements Iterator
                 $active = true;
             }
 
+            $output = __($row->$display);
             if (!empty($selected) || $active) {
-                $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}</option>";
+                $options .= "<option value='{$row->$value}'{$selected}>{$output}</option>";
             } elseif (!$onlyActive) {
-                $options .= "<option value='{$row->$value}'{$selected}>{$row->$display}{$inactiveText}</option>";
+                $options .= "<option value='{$row->$value}'{$selected}>{$output}{$inactiveText}</option>";
             }
         }
 

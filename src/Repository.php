@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.07.03.0
+ * @version 2025.09.15.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.07.03';
+        return '2025.09.15';
     }
 
     public function __construct()
@@ -69,6 +69,23 @@ class Repository implements Iterator
     }
 
     /**
+     * Load all distinct data from the database
+     *
+     * @param string $distinctField
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllDistinct(string $distinctField, string $orderBy = ''): void
+    {
+        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table}";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
      * Load all data from the database of active records
      *
      * @param string $orderBy
@@ -85,6 +102,23 @@ class Repository implements Iterator
     }
 
     /**
+     * Load all distinct data from the database of active records
+     *
+     * @param string $distinctField
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllActiveDistinct(string $distinctField, string $orderBy = ''): void
+    {
+        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table} WHERE active = 1";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
      * Load all data from the database of inactive records
      *
      * @param string $orderBy
@@ -93,6 +127,23 @@ class Repository implements Iterator
     public function loadAllInactive(string $orderBy = ''): void
     {
         $sql = "SELECT * FROM {$this->table} WHERE active = 0";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
+     * Load all distinct data from the database of inactive records
+     *
+     * @param string $distinctField
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllInactiveDistinct(string $distinctField, string $orderBy = ''): void
+    {
+        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table} WHERE active = 0";
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }

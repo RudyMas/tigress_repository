@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.09.15.1
+ * @version 2025.09.16.1
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.09.15';
+        return '2025.09.16';
     }
 
     public function __construct()
@@ -1004,6 +1004,33 @@ class Repository implements Iterator
     }
 
     /**
+     * Get the select options
+     *
+     * @param mixed $id
+     * @param bool|string $text
+     * @param string $display
+     * @param string $value
+     * @param bool $onlyActive
+     * @param string $inactiveText
+     * @return string
+     */
+    public function getSelectOptions(
+        mixed       $id = 0,
+        bool|string $text = ' - Select - ',
+        string      $display = 'name',
+        string      $value = 'id',
+        bool        $onlyActive = false,
+        string      $inactiveText = ' - Inactive',
+        string      $initialValuePlaceholder = ''
+    ): string
+    {
+        if (empty($this->objects)) {
+            $this->loadAll();
+        }
+        return $this->createOptions($id, $text, $display, $value, $onlyActive, $inactiveText, $initialValuePlaceholder);
+    }
+
+    /**
      * Create the options for the select
      *
      * @param mixed $id
@@ -1015,15 +1042,16 @@ class Repository implements Iterator
      * @return string
      */
     protected function createOptions(
-        mixed $id,
+        mixed       $id,
         bool|string $text,
-        string $display,
-        string $value = 'id',
-        bool $onlyActive = false,
-        string $inactiveText = ' - Inactive'
+        string      $display,
+        string      $value = 'id',
+        bool        $onlyActive = false,
+        string      $inactiveText = ' - Inactive',
+        string      $initialValuePlaceholder = ''
     ): string
     {
-        return $this->createOption($text, $value, $id, $display, $this, $onlyActive, $inactiveText);
+        return $this->createOption($text, $value, $id, $display, $this, $onlyActive, $inactiveText, $initialValuePlaceholder);
     }
 
     /**
@@ -1037,11 +1065,11 @@ class Repository implements Iterator
      * @return string
      */
     protected function createOptionsByData(
-        mixed $id,
+        mixed       $id,
         bool|string $text,
-        string $display,
-        string $value = 'id',
-        array $data = []
+        string      $display,
+        string      $value = 'id',
+        array       $data = []
     ): string
     {
         return $this->createOption($text, $value, $id, $display, $data);
@@ -1059,19 +1087,21 @@ class Repository implements Iterator
      * @param Repository|array $data
      * @param bool $onlyActive
      * @param string $inactiveText
+     * @param string $initialValuePlaceholder
      * @return string
      */
     private function createOption(
-        bool|string $text,
-        string $value,
-        mixed $id,
-        string $display,
+        bool|string      $text,
+        string           $value,
+        mixed            $id,
+        string           $display,
         Repository|array $data,
-        bool $onlyActive = false,
-        string $inactiveText = ' - Inactive'
+        bool             $onlyActive = false,
+        string           $inactiveText = ' - Inactive',
+        string           $initialValuePlaceholder = ''
     ): string
     {
-        $options = (empty($text)) ? '' : "<option value='-1'>{$text}</option>";
+        $options = (empty($text)) ? '' : "<option value='{$initialValuePlaceholder}'>{$text}</option>";
         foreach ($data as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
 

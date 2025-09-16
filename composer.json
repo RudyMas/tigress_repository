@@ -17,9 +17,8 @@
     "ext-pdo": "*"
   },
   "require-dev": {
-    "tigress/core": ">=2024",
-    "tigress/database": ">=2024",
-    "tigress/model": ">=2024"
+    "tigress/database": "*",
+    "tigress/model": "*"
   },
   "autoload": {
     "psr-4": {

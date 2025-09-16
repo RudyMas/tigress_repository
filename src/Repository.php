@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.09.16.1
+ * @version 2025.09.16.2
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -1001,34 +1001,6 @@ class Repository implements Iterator
     public function getTableName(): string
     {
         return $this->table;
-    }
-
-    /**
-     * Get the select options
-     *
-     * @param mixed $id
-     * @param bool|string $text
-     * @param string $display
-     * @param string $value
-     * @param bool $onlyActive
-     * @param string $inactiveText
-     * @param string $initialValuePlaceholder
-     * @return string
-     */
-    public function getSelectOptions(
-        mixed       $id = 0,
-        bool|string $text = ' - Select - ',
-        string      $display = 'name',
-        string      $value = 'id',
-        bool        $onlyActive = false,
-        string      $inactiveText = ' - Inactive',
-        string      $initialValuePlaceholder = ''
-    ): string
-    {
-        if (empty($this->objects)) {
-            $this->loadAll();
-        }
-        return $this->createOptions($id, $text, $display, $value, $onlyActive, $inactiveText, $initialValuePlaceholder);
     }
 
     /**

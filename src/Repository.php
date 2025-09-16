@@ -1012,6 +1012,7 @@ class Repository implements Iterator
      * @param string $value
      * @param bool $onlyActive
      * @param string $inactiveText
+     * @param string $initialValuePlaceholder
      * @return string
      */
     public function getSelectOptions(
@@ -1039,6 +1040,7 @@ class Repository implements Iterator
      * @param string $value
      * @param bool $onlyActive
      * @param string $inactiveText
+     * @param string $initialValuePlaceholder
      * @return string
      */
     protected function createOptions(

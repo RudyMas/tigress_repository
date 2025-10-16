@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.09.16.2
+ * @version 2025.10.16.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.09.16';
+        return '2025.10.16';
     }
 
     public function __construct()
@@ -445,6 +445,72 @@ class Repository implements Iterator
         }
 
         $keyBindings[':id'] = $id;
+        $this->database->updateQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Delete an object by field in the database
+     *
+     * @param string $field
+     * @param mixed $value
+     * @param string $message
+     * @return void
+     */
+    public function deleteByField(string $field, mixed $value, string $message = ''): void
+    {
+        $sql = "DELETE FROM {$this->table} WHERE {$field} = :value";
+        if ($this->softDelete) {
+            $sql = "UPDATE {$this->table} SET active = 0 WHERE {$field} = :value";
+
+            if (key_exists('deleted_user_id', $this->fields)) {
+                $sql = "UPDATE {$this->table} SET active = 0, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE {$field} = :value";
+                $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+            } elseif (key_exists('deleted', $this->fields)) {
+                $sql = "UPDATE {$this->table} SET active = 0, deleted = :deleted WHERE {$field} = :value";
+                $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+            }
+
+            if ($message !== '') {
+                $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE {$field} = :value";
+
+                if (key_exists('deleted_user_id', $this->fields)) {
+                    $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE {$field} = :value";
+                    $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                    $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+                } elseif (key_exists('deleted', $this->fields)) {
+                    $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message, deleted = :deleted WHERE {$field} = :value";
+                    $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                }
+                $keyBindings[':message'] = $message;
+            }
+        }
+        $keyBindings[':value'] = $value;
+        $this->database->deleteQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Undelete an object by field in the database
+     *
+     * @param string $field
+     * @param mixed $value
+     * @return void
+     */
+    public function undeleteByField(string $field, mixed $value): void
+    {
+        $sql = "UPDATE {$this->table} SET active = 1 WHERE {$field} = :value";
+        $keyBindings = [];
+
+        if (key_exists('deleted_user_id', $this->fields)) {
+            $sql = "UPDATE {$this->table} SET active = 1, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE {$field} = :value";
+            $keyBindings[':deleted'] = '0000-00-00 00:00:00';
+            $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+        } elseif (key_exists('deleted', $this->fields)) {
+            $sql = "UPDATE {$this->table} SET active = 1, deleted = :deleted WHERE {$field} = :value";
+            $keyBindings[':deleted'] = '0000-00-00 00:00:00';
+        }
+
+        $keyBindings[':value'] = $value;
         $this->database->updateQuery($sql, $keyBindings);
     }
 

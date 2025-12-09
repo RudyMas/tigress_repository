@@ -5,12 +5,12 @@ namespace Tigress;
 use stdClass;
 
 /**
- * Class SetupRepository (PHP version 8.4)
+ * Class SetupRepository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.09.15.0
+ * @version 2025.12.09.0
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -24,7 +24,7 @@ class SetupRepository extends Repository
      */
     public static function version(): string
     {
-        return '2025.09.15';
+        return '2025.12.09';
     }
 
     /**

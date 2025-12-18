@@ -11,7 +11,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.12.09.0
+ * @version 2025.12.18.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -34,7 +34,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.12.09';
+        return '2025.12.18';
     }
 
     public function __construct()
@@ -69,23 +69,6 @@ class Repository implements Iterator
     }
 
     /**
-     * Load all distinct data from the database
-     *
-     * @param string $distinctField
-     * @param string $orderBy
-     * @return void
-     */
-    public function loadAllDistinct(string $distinctField, string $orderBy = ''): void
-    {
-        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table}";
-        if ($orderBy !== '') {
-            $sql .= " ORDER BY {$orderBy}";
-        }
-        $this->database->selectQuery($sql);
-        $this->createObjects();
-    }
-
-    /**
      * Load all data from the database of active records
      *
      * @param string $orderBy
@@ -111,6 +94,23 @@ class Repository implements Iterator
     public function loadAllActiveDistinct(string $distinctField, string $orderBy = ''): void
     {
         $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table} WHERE active = 1";
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
+     * Load all distinct data from the database
+     *
+     * @param string $distinctField
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllDistinct(string $distinctField, string $orderBy = ''): void
+    {
+        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table}";
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
@@ -195,6 +195,19 @@ class Repository implements Iterator
     }
 
     /**
+     * Load data from the database based on the query
+     *
+     * @param string $sql
+     * @param array $keyBindings
+     * @return void
+     */
+    public function loadByQuery(string $sql, array $keyBindings = []): void
+    {
+        $this->database->selectQuery($sql, $keyBindings);
+        $this->createObjects();
+    }
+
+    /**
      * Load data from the database based on the where clause
      * The where clause is an array
      *
@@ -232,19 +245,6 @@ class Repository implements Iterator
         if ($orderBy !== '') {
             $sql .= " ORDER BY {$orderBy}";
         }
-        $this->database->selectQuery($sql, $keyBindings);
-        $this->createObjects();
-    }
-
-    /**
-     * Load data from the database based on the query
-     *
-     * @param string $sql
-     * @param array $keyBindings
-     * @return void
-     */
-    public function loadByQuery(string $sql, array $keyBindings = []): void
-    {
         $this->database->selectQuery($sql, $keyBindings);
         $this->createObjects();
     }
@@ -420,6 +420,20 @@ class Repository implements Iterator
                 $keyBindings[':message'] = $message;
             }
         }
+        $keyBindings[':id'] = $id;
+        $this->database->deleteQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Force Delete an object by id in the database
+     *
+     * @param int $id
+     * @param string $message
+     * @return void
+     */
+    public function forceDeleteById(int $id, string $message = ''): void
+    {
+        $sql = "DELETE FROM {$this->table} WHERE id = :id";
         $keyBindings[':id'] = $id;
         $this->database->deleteQuery($sql, $keyBindings);
     }

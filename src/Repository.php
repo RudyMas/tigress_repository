@@ -9,20 +9,21 @@ use Iterator;
  * Class Repository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
+ * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.12.18.0
+ * @version 2026.01.09.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
 {
-    protected string $model;
-    protected ?string $dbName;
-    protected string $table;
-    protected array $primaryKey;
     protected bool $autoload = false;
-    protected bool $softDelete = false;
+    protected array $createTable = [];
     protected Database $database;
+    protected ?string $dbName;
+    protected string $model;
+    protected array $primaryKey;
+    protected bool $softDelete = false;
+    protected string $table;
     private array $fields = [];
     private array $objects = [];
     private int $position = 0;
@@ -34,13 +35,19 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2025.12.18';
+        return '2026.01.09';
     }
 
+    /**
+     * @throws Exception
+     */
     public function __construct()
     {
         if (!is_null($this->dbName)) {
             $this->database = DATABASE[$this->dbName];
+
+            $this->checkIfTableExists();
+
             if ($this->autoload) {
                 $this->loadTableInformation();
             }
@@ -49,6 +56,27 @@ class Repository implements Iterator
         $file = SYSTEM_ROOT . '/translations/translations.json';
         if (file_exists($file)) {
             TRANSLATIONS->load($file);
+        }
+    }
+
+    /**
+     * Check if the table exists, if not create it
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function checkIfTableExists(): void
+    {
+        $sql = "SHOW TABLES LIKE :table";
+        $keyBindings = [':table' => $this->table];
+        $this->database->selectQuery($sql, $keyBindings);
+
+        if ($this->database->getRows() === 0 && !empty($this->createTable)) {
+            foreach ($this->createTable as $createSql) {
+                $this->database->query($createSql);
+            }
+        } elseif ($this->database->getRows() === 0) {
+            throw new Exception("Table {$this->table} does not exist and no create table SQL provided.");
         }
     }
 

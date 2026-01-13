@@ -8,9 +8,9 @@ use stdClass;
  * Class SetupRepository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2025, rudymas.be. (http://www.rudymas.be/)
+ * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.12.09.0
+ * @version 2026.01.13.0
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -24,7 +24,32 @@ class SetupRepository extends Repository
      */
     public static function version(): string
     {
-        return '2025.12.09';
+        return '2026.01.13';
+    }
+
+    public function __construct()
+    {
+        $this->createTable = [
+            'table' => "
+                CREATE TABLE `{$this->table}` (
+                  `setting` varchar(30) NOT NULL,
+                  `value` text NOT NULL
+                ) ENGINE=InnoDB
+                  DEFAULT CHARSET=utf8mb4
+                  COLLATE=utf8mb4_general_ci
+                  ROW_FORMAT=DYNAMIC;
+            ",
+            'indexes' => [
+                "ALTER TABLE `{$this->table}` ADD UNIQUE KEY `instelling` (`setting`) USING BTREE;"
+            ],
+            'seed' => [
+                "INSERT INTO `{$this->table}` (`setting`, `value`)
+                 VALUES ('access', '[1]')
+                 ON DUPLICATE KEY UPDATE `value` = `value`;"
+            ]
+        ];
+
+        parent::__construct();
     }
 
     /**

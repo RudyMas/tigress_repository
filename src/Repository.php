@@ -4,6 +4,7 @@ namespace Tigress;
 
 use Exception;
 use Iterator;
+use Throwable;
 
 /**
  * Class Repository (PHP version 8.5)
@@ -11,7 +12,7 @@ use Iterator;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.09.0
+ * @version 2026.01.13.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -60,23 +61,193 @@ class Repository implements Iterator
     }
 
     /**
-     * Check if the table exists, if not create it
+     * Check if the table exists, if not create it (race-condition safe),
+     * and ensure required indexes exist.
+     *
+     * Expects $this->createTable to be an array with optional keys:
+     * - 'table'   => string  (CREATE TABLE ... )
+     * - 'indexes' => string[] (ALTER TABLE ... ADD ... )
+     * - 'seed'    => string[] (INSERT ... )
+     *
+     * If $this->createTable is a simple list of SQL strings, it will still run them
+     * but index-checking will be skipped (for backward compatibility).
      *
      * @return void
      * @throws Exception
+     * @throws Throwable
      */
     public function checkIfTableExists(): void
     {
-        $sql = "SHOW TABLES LIKE :table";
-        $keyBindings = [':table' => $this->table];
-        $this->database->selectQuery($sql, $keyBindings);
-
-        if ($this->database->getRows() === 0 && !empty($this->createTable)) {
-            foreach ($this->createTable as $createSql) {
-                $this->database->query($createSql);
+        if (empty($this->createTable)) {
+            // No auto-create SQL provided
+            if (!$this->tableExists($this->table)) {
+                throw new Exception("Table {$this->table} does not exist and no create table SQL provided.");
             }
-        } elseif ($this->database->getRows() === 0) {
-            throw new Exception("Table {$this->table} does not exist and no create table SQL provided.");
+            return;
+        }
+
+        // Backward compatible mode: if user still provided a numeric array of SQL strings
+        $isLegacyList = array_is_list($this->createTable);
+
+        if ($isLegacyList) {
+            // We can only do safe CREATE IF NOT EXISTS here if the provided SQL already uses it.
+            // We'll still make it race-safe by swallowing "already exists" errors.
+            if (!$this->tableExists($this->table)) {
+                foreach ($this->createTable as $sql) {
+                    $this->safeDdl($sql);
+                }
+            }
+            return;
+        }
+
+        $createSql  = $this->createTable['table']   ?? null;
+        $indexSqls  = $this->createTable['indexes'] ?? [];
+        $seedSqls   = $this->createTable['seed']    ?? [];
+
+        // 1) Ensure table exists (race-safe)
+        if (!$this->tableExists($this->table)) {
+            if (empty($createSql)) {
+                throw new Exception("Table {$this->table} does not exist and no CREATE TABLE SQL provided.");
+            }
+
+            // Make CREATE TABLE race-safe
+            $createSql = $this->ensureCreateTableIfNotExists($createSql);
+            $this->safeDdl($createSql);
+        }
+
+        // 2) Ensure required indexes exist (race-safe)
+        // We'll detect index names inside the SQL and check them via information_schema.statistics
+        foreach ($indexSqls as $sql) {
+            $indexName = $this->extractIndexName($sql);
+            if ($indexName === null) {
+                // If we can't detect the index name reliably, run it safely (ignore duplicates)
+                $this->safeDdl($sql);
+                continue;
+            }
+
+            if (!$this->indexExists($this->table, $indexName)) {
+                $this->safeDdl($sql);
+            }
+        }
+
+        // 3) Seed data (optional) - make it safe as well
+        foreach ($seedSqls as $sql) {
+            $this->safeSeed($sql);
+        }
+    }
+
+    /**
+     * Check table existence using information_schema.
+     */
+    private function tableExists(string $table): bool
+    {
+        $sql = "
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE()
+          AND table_name = :table
+        LIMIT 1
+    ";
+        $this->database->selectQuery($sql, [':table' => $table]);
+        return $this->database->getRows() > 0;
+    }
+
+    /**
+     * Check index existence using information_schema.statistics.
+     */
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $sql = "
+        SELECT 1
+        FROM information_schema.statistics
+        WHERE table_schema = DATABASE()
+          AND table_name = :table
+          AND index_name = :index
+        LIMIT 1
+    ";
+        $this->database->selectQuery($sql, [':table' => $table, ':index' => $indexName]);
+        return $this->database->getRows() > 0;
+    }
+
+    /**
+     * Attempts to extract index name from common ALTER TABLE ADD (UNIQUE) KEY statements.
+     */
+    private function extractIndexName(string $sql): ?string
+    {
+        // Matches: ADD UNIQUE KEY `name` (...)  or ADD KEY `name` (...) or ADD INDEX `name` (...)
+        if (preg_match('/ADD\s+(?:UNIQUE\s+)?(?:KEY|INDEX)\s+`([^`]+)`/i', $sql, $m)) {
+            return $m[1];
+        }
+        // Matches: ADD CONSTRAINT `name` UNIQUE (...)  (if you ever go that route)
+        if (preg_match('/ADD\s+CONSTRAINT\s+`([^`]+)`\s+UNIQUE/i', $sql, $m)) {
+            return $m[1];
+        }
+        return null;
+    }
+
+    /**
+     * Ensures CREATE TABLE uses IF NOT EXISTS (race-condition safe).
+     */
+    private function ensureCreateTableIfNotExists(string $createSql): string
+    {
+        // If it's already present, keep it.
+        if (preg_match('/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS/i', $createSql)) {
+            return $createSql;
+        }
+
+        // Replace first occurrence of "CREATE TABLE" (case-insensitive) with "CREATE TABLE IF NOT EXISTS"
+        return preg_replace('/CREATE\s+TABLE/i', 'CREATE TABLE IF NOT EXISTS', $createSql, 1) ?? $createSql;
+    }
+
+    /**
+     * Execute DDL safely: ignore "already exists" type errors that can happen in concurrent requests.
+     * @throws Throwable
+     */
+    private function safeDdl(string $sql): void
+    {
+        try {
+            $this->database->query($sql);
+        } catch (Throwable $e) {
+            $msg = $e->getMessage();
+
+            // Common harmless concurrency cases:
+            // - Table exists
+            // - Duplicate key/index name
+            // - Index/constraint already exists
+            if (
+                stripos($msg, 'already exists') !== false ||
+                stripos($msg, 'Duplicate key name') !== false ||
+                stripos($msg, 'ER_TABLE_EXISTS_ERROR') !== false ||
+                stripos($msg, 'ER_DUP_KEYNAME') !== false
+            ) {
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Execute seed SQL safely: prefer idempotent inserts.
+     * If the SQL isn't idempotent, we swallow duplicate-entry errors.
+     * @throws Throwable
+     */
+    private function safeSeed(string $sql): void
+    {
+        try {
+            $this->database->query($sql);
+        } catch (Throwable $e) {
+            $msg = $e->getMessage();
+
+            // Duplicate entry / already present → ignore
+            if (
+                stripos($msg, 'Duplicate entry') !== false ||
+                stripos($msg, 'ER_DUP_ENTRY') !== false
+            ) {
+                return;
+            }
+
+            throw $e;
         }
     }
 

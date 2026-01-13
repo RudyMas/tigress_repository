@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.13.0
+ * @version 2026.01.13.1
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.01.09';
+        return '2026.01.13';
     }
 
     /**
@@ -174,14 +174,21 @@ class Repository implements Iterator
      */
     private function extractIndexName(string $sql): ?string
     {
+        // PRIMARY KEY -> indexnaam is altijd 'PRIMARY'
+        if (preg_match('/ADD\s+PRIMARY\s+KEY/i', $sql)) {
+            return 'PRIMARY';
+        }
+
         // Matches: ADD UNIQUE KEY `name` (...)  or ADD KEY `name` (...) or ADD INDEX `name` (...)
         if (preg_match('/ADD\s+(?:UNIQUE\s+)?(?:KEY|INDEX)\s+`([^`]+)`/i', $sql, $m)) {
             return $m[1];
         }
-        // Matches: ADD CONSTRAINT `name` UNIQUE (...)  (if you ever go that route)
+
+        // Matches: ADD CONSTRAINT `name` UNIQUE (...)
         if (preg_match('/ADD\s+CONSTRAINT\s+`([^`]+)`\s+UNIQUE/i', $sql, $m)) {
             return $m[1];
         }
+
         return null;
     }
 
@@ -210,15 +217,15 @@ class Repository implements Iterator
         } catch (Throwable $e) {
             $msg = $e->getMessage();
 
-            // Common harmless concurrency cases:
-            // - Table exists
-            // - Duplicate key/index name
-            // - Index/constraint already exists
             if (
                 stripos($msg, 'already exists') !== false ||
                 stripos($msg, 'Duplicate key name') !== false ||
+                stripos($msg, 'Duplicate entry') !== false ||
+                stripos($msg, 'Multiple primary key defined') !== false ||
                 stripos($msg, 'ER_TABLE_EXISTS_ERROR') !== false ||
-                stripos($msg, 'ER_DUP_KEYNAME') !== false
+                stripos($msg, 'ER_DUP_KEYNAME') !== false ||
+                stripos($msg, 'ER_DUP_ENTRY') !== false ||
+                stripos($msg, 'ER_MULTIPLE_PRI_KEY') !== false
             ) {
                 return;
             }

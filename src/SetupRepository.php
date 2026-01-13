@@ -10,7 +10,7 @@ use stdClass;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.13.0
+ * @version 2026.01.13.1
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -44,7 +44,7 @@ class SetupRepository extends Repository
             ],
             'seed' => [
                 "INSERT INTO `{$this->table}` (`setting`, `value`)
-                 VALUES ('access', '[1]')
+                 VALUES ('access_settings', '[1]')
                  ON DUPLICATE KEY UPDATE `value` = `value`;"
             ]
         ];

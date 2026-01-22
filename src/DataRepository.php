@@ -8,9 +8,9 @@ use Exception;
  * Class DataRepository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
+ * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.12.09.0
+ * @version 2026.01.22.0
  * @package Tigress\Repository
  */
 class DataRepository extends Repository
@@ -24,7 +24,72 @@ class DataRepository extends Repository
      */
     public static function version(): string
     {
-        return '2025.12.09';
+        return '2026.01.22';
+    }
+
+    /**
+     * Delete object by id in the database
+     *
+     * @param int $id
+     * @param string $message
+     * @return void
+     * @throws Exception
+     */
+    public function deleteById(int $id, string $message = ''): void
+    {
+        throw new Exception('Object cannot be deleted in this repository');
+    }
+
+    /**
+     * Delete object by primary key in the database
+     *
+     * @param array $primaryKeyValue
+     * @param string $message
+     * @return void
+     * @throws Exception
+     */
+    public function deleteByPrimaryKey(array $primaryKeyValue, string $message = ''): void
+    {
+        throw new Exception('Object cannot be deleted in this repository');
+    }
+
+    /**
+     * Delete object by where clause in the database
+     *
+     * @param string $sql
+     * @param array $keyBindings
+     * @return void
+     * @throws Exception
+     */
+    public function deleteByQuery(string $sql, array $keyBindings = []): void
+    {
+        throw new Exception('Object cannot be deleted in this repository');
+    }
+
+    /**
+     * Get data from the database based on a query
+     *
+     * @param string $sql
+     * @param array $keyBindings
+     * @return array
+     * @throws Exception
+     */
+    public function getByQuery(string $sql, array $keyBindings = []): array
+    {
+        throw new Exception('Object cannot be retrieved in this repository');
+    }
+
+    /**
+     * Get data from the database based on a query
+     *
+     * @param string $sql
+     * @param array $keyBindings
+     * @return mixed
+     * @throws Exception
+     */
+    public function getRowByQuery(string $sql, array $keyBindings = []): mixed
+    {
+        throw new Exception('Object cannot be retrieved in this repository');
     }
 
     /**
@@ -100,19 +165,6 @@ class DataRepository extends Repository
     }
 
     /**
-     * Load data from the database based on the where clause
-     *
-     * @param array $where
-     * @param string $orderBy
-     * @return void
-     * @throws Exception
-     */
-    public function loadByWhere(array $where, string $orderBy = ''): void
-    {
-        throw new Exception('Object cannot be loaded like this in the repository');
-    }
-
-    /**
      * Load data from the database based on the query
      *
      * @param string $sql
@@ -121,6 +173,19 @@ class DataRepository extends Repository
      * @throws Exception
      */
     public function loadByQuery(string $sql, array $keyBindings = []): void
+    {
+        throw new Exception('Object cannot be loaded like this in the repository');
+    }
+
+    /**
+     * Load data from the database based on the where clause
+     *
+     * @param array $where
+     * @param string $orderBy
+     * @return void
+     * @throws Exception
+     */
+    public function loadByWhere(array $where, string $orderBy = ''): void
     {
         throw new Exception('Object cannot be loaded like this in the repository');
     }
@@ -149,66 +214,14 @@ class DataRepository extends Repository
     }
 
     /**
-     * Delete object by id in the database
+     * Set the data
      *
-     * @param int $id
-     * @param string $message
+     * @param array $data
      * @return void
-     * @throws Exception
      */
-    public function deleteById(int $id, string $message = ''): void
+    public function setData(array $data): void
     {
-        throw new Exception('Object cannot be deleted in this repository');
-    }
-
-    /**
-     * Undelete object by id in the database
-     *
-     * @param int $id
-     * @return void
-     * @throws Exception
-     */
-    public function undeleteById(int $id): void
-    {
-        throw new Exception('Object cannot be undeleted in this repository');
-    }
-
-    /**
-     * Delete object by primary key in the database
-     *
-     * @param array $primaryKeyValue
-     * @param string $message
-     * @return void
-     * @throws Exception
-     */
-    public function deleteByPrimaryKey(array $primaryKeyValue, string $message = ''): void
-    {
-        throw new Exception('Object cannot be deleted in this repository');
-    }
-
-    /**
-     * Undelete object by primary key in the database
-     *
-     * @param array $primaryKeyValue
-     * @return void
-     * @throws Exception
-     */
-    public function undeleteByPrimaryKey(array $primaryKeyValue): void
-    {
-        throw new Exception('Object cannot be undeleted in this repository');
-    }
-
-    /**
-     * Delete object by where clause in the database
-     *
-     * @param string $sql
-     * @param array $keyBindings
-     * @return void
-     * @throws Exception
-     */
-    public function deleteByQuery(string $sql, array $keyBindings = []): void
-    {
-        throw new Exception('Object cannot be deleted in this repository');
+        $this->data = json_decode(json_encode($data));
     }
 
     /**
@@ -225,40 +238,27 @@ class DataRepository extends Repository
     }
 
     /**
-     * Get data from the database based on a query
+     * Undelete object by id in the database
      *
-     * @param string $sql
-     * @param array $keyBindings
-     * @return array
-     * @throws Exception
-     */
-    public function getByQuery(string $sql, array $keyBindings = []): array
-    {
-        throw new Exception('Object cannot be retrieved in this repository');
-    }
-
-    /**
-     * Get data from the database based on a query
-     *
-     * @param string $sql
-     * @param array $keyBindings
-     * @return mixed
-     * @throws Exception
-     */
-    public function getRowByQuery(string $sql, array $keyBindings = []): mixed
-    {
-        throw new Exception('Object cannot be retrieved in this repository');
-    }
-
-    /**
-     * Set the data
-     *
-     * @param array $data
+     * @param int $id
      * @return void
+     * @throws Exception
      */
-    public function setData(array $data): void
+    public function undeleteById(int $id): void
     {
-        $this->data = json_decode(json_encode($data));
+        throw new Exception('Object cannot be undeleted in this repository');
+    }
+
+    /**
+     * Undelete object by primary key in the database
+     *
+     * @param array $primaryKeyValue
+     * @return void
+     * @throws Exception
+     */
+    public function undeleteByPrimaryKey(array $primaryKeyValue): void
+    {
+        throw new Exception('Object cannot be undeleted in this repository');
     }
 
     /**

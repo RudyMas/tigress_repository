@@ -10,7 +10,7 @@ use stdClass;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.13.1
+ * @version 2026.01.22.0
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -24,7 +24,7 @@ class SetupRepository extends Repository
      */
     public static function version(): string
     {
-        return '2026.01.13';
+        return '2026.01.22';
     }
 
     public function __construct()
@@ -50,6 +50,39 @@ class SetupRepository extends Repository
         ];
 
         parent::__construct();
+    }
+
+    /**
+     * Get a setting
+     *
+     * @param string $setting
+     * @return string
+     */
+    public function _get(string $setting): string
+    {
+        return $this->data->{$setting} ?? '';
+    }
+
+    /**
+     * Get all settings
+     *
+     * @return stdClass
+     */
+    public function _getAll(): stdClass
+    {
+        return $this->data;
+    }
+
+    /**
+     * Check if user has access
+     *
+     * @param string $field
+     * @param int $value
+     * @return bool
+     */
+    public function _hasAccess(string $field, int $value): bool
+    {
+        return in_array($value, json_decode($this->data->{$field}, true));
     }
 
     /**
@@ -86,41 +119,6 @@ class SetupRepository extends Repository
     }
 
     /**
-     * Update a setting
-     *
-     * @param string $setting
-     * @param string $value
-     * @return void
-     */
-    public function _update(string $setting, string $value): void
-    {
-        $this->data->{$setting} = $value;
-    }
-
-    /**
-     * Check if user has access
-     *
-     * @param string $field
-     * @param int $value
-     * @return bool
-     */
-    public function _hasAccess(string $field, int $value): bool
-    {
-        return in_array($value, json_decode($this->data->{$field}, true));
-    }
-
-    /**
-     * Get a setting
-     *
-     * @param string $setting
-     * @return string
-     */
-    public function _get(string $setting): string
-    {
-        return $this->data->{$setting} ?? '';
-    }
-
-    /**
      * Set a setting & save it
      *
      * @param string $setting
@@ -134,12 +132,14 @@ class SetupRepository extends Repository
     }
 
     /**
-     * Get all settings
+     * Update a setting
      *
-     * @return stdClass
+     * @param string $setting
+     * @param string $value
+     * @return void
      */
-    public function _getAll(): stdClass
+    public function _update(string $setting, string $value): void
     {
-        return $this->data;
+        $this->data->{$setting} = $value;
     }
 }

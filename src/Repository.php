@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.22.1
+ * @version 2026.01.28.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.01.22';
+        return '2026.01.28';
     }
 
     /**
@@ -1130,11 +1130,7 @@ class Repository implements Iterator
         foreach ($data as $row) {
             $selected = ($row->$value == $id) ? ' selected' : '';
 
-            if ($row->has('active')) {
-                $active = $row->active;
-            } else {
-                $active = true;
-            }
+            $active = !method_exists($row, 'has') || ((!$row->has('active') || $row->active));
 
             $output = __($row->$display);
             if (!empty($selected) || $active) {

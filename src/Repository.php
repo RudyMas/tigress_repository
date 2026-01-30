@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.28.0
+ * @version 2026.01.30.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.01.28';
+        return '2026.01.30';
     }
 
     /**
@@ -609,6 +609,29 @@ class Repository implements Iterator
             $sql .= " ORDER BY {$orderBy}";
         }
         $this->database->selectQuery($sql);
+        $this->createObjects();
+    }
+
+    /**
+     * Load all distinct data from the database based on the where clause
+     *
+     * @param array $where
+     * @param string $distinctField
+     * @param string $orderBy
+     * @return void
+     */
+    public function loadAllDistinctByWhere(array $where, string $distinctField, string $orderBy = ''): void
+    {
+        $sql = "SELECT DISTINCT {$distinctField} FROM {$this->table} WHERE ";
+        foreach ($where as $key => $value) {
+            $sql .= "{$key} = :{$key} AND ";
+            $keyBindings[":{$key}"] = $value;
+        }
+        $sql = rtrim($sql, ' AND ');
+        if ($orderBy !== '') {
+            $sql .= " ORDER BY {$orderBy}";
+        }
+        $this->database->selectQuery($sql, $keyBindings);
         $this->createObjects();
     }
 

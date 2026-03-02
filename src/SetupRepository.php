@@ -10,7 +10,7 @@ use stdClass;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.01.22.0
+ * @version 2026.03.02.0
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -24,7 +24,7 @@ class SetupRepository extends Repository
      */
     public static function version(): string
     {
-        return '2026.01.22';
+        return '2026.03.02';
     }
 
     public function __construct()
@@ -34,10 +34,7 @@ class SetupRepository extends Repository
                 CREATE TABLE `{$this->table}` (
                   `setting` varchar(30) NOT NULL,
                   `value` text NOT NULL
-                ) ENGINE=InnoDB
-                  DEFAULT CHARSET=utf8mb4
-                  COLLATE=utf8mb4_general_ci
-                  ROW_FORMAT=DYNAMIC;
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
             ",
             'indexes' => [
                 "ALTER TABLE `{$this->table}` ADD UNIQUE KEY `instelling` (`setting`) USING BTREE;"
@@ -78,11 +75,12 @@ class SetupRepository extends Repository
      *
      * @param string $field
      * @param int $value
+     * @param bool $overrule
      * @return bool
      */
-    public function _hasAccess(string $field, int $value): bool
+    public function _hasAccess(string $field, int $value, bool $overrule = false): bool
     {
-        return in_array($value, json_decode($this->data->{$field}, true));
+        return $overrule || in_array($value, json_decode($this->data->{$field}, true));
     }
 
     /**

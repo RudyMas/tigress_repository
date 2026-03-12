@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.03.12.0
+ * @version 2026.03.12.1
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -849,37 +849,49 @@ class Repository implements Iterator
      *
      * @param object $object
      * @return void
+     * @throws Throwable
      */
     public function save(object &$object): void
     {
-        $this->database->beginTransaction();
-        if ($this->exists($object)) {
-            $this->updateObject($object);
-        } else {
-            $this->saveObject($object);
-            if (isset($object->id)) {
-                $object->id = (int)$this->database->lastInsertId();
+        try {
+            $this->beginTransaction();
+            if ($this->exists($object)) {
+                $this->updateObject($object);
+            } else {
+                $this->saveObject($object);
+                if (isset($object->id)) {
+                    $object->id = (int)$this->database->lastInsertId();
+                }
             }
+            $this->commit();
+        } catch (Throwable $e) {
+            $this->rollback();
+            throw $e;
         }
-        $this->database->commit();
     }
 
     /**
      * Save all objects
      *
      * @return void
+     * @throws Throwable
      */
     public function saveAll(): void
     {
-        $this->database->beginTransaction();
-        foreach ($this->objects as $object) {
-            if ($this->exists($object)) {
-                $this->updateObject($object);
-            } else {
-                $this->saveObject($object);
+        try {
+            $this->beginTransaction();
+            foreach ($this->objects as $object) {
+                if ($this->exists($object)) {
+                    $this->updateObject($object);
+                } else {
+                    $this->saveObject($object);
+                }
             }
+            $this->commit();
+        } catch (Throwable $e) {
+            $this->rollback();
+            throw $e;
         }
-        $this->database->commit();
     }
 
     /**

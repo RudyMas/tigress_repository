@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.03.12.2
+ * @version 2026.03.27.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.03.12';
+        return '2026.03.27';
     }
 
     /**
@@ -539,6 +539,38 @@ class Repository implements Iterator
     public function getTableName(): string
     {
         return $this->table;
+    }
+
+    /**
+     * Get a Yes/No options for select
+     *
+     * @param int $id
+     * @param bool $reverse
+     * @return string
+     */
+    public function getYesNoOptions(int $id, bool $reverse = false): string
+    {
+        if ($reverse) {
+            $list = [
+                1 => __('Yes'),
+                0 => __('No'),
+            ];
+        } else {
+            $list = [
+                0 => __('No'),
+                1 => __('Yes'),
+            ];
+        }
+
+        $options = '';
+        foreach ($list as $key => $name) {
+            if ($id === $key) {
+                $options .= '<option value="' . $key . '" selected>' . $name . '</option>';
+            } else {
+                $options .= '<option value="' . $key . '">' . $name . '</option>';
+            }
+        }
+        return $options;
     }
 
     /**

@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.03.27.0
+ * @version 2026.03.27.1
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -552,13 +552,13 @@ class Repository implements Iterator
     {
         if ($reverse) {
             $list = [
-                1 => __('Yes'),
                 0 => __('No'),
+                1 => __('Yes'),
             ];
         } else {
             $list = [
-                0 => __('No'),
                 1 => __('Yes'),
+                0 => __('No'),
             ];
         }
 

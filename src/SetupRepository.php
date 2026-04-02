@@ -10,7 +10,7 @@ use stdClass;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.03.02.0
+ * @version 2026.04.02.0
  * @package Tigress\SetupRepository
  */
 class SetupRepository extends Repository
@@ -57,7 +57,7 @@ class SetupRepository extends Repository
      */
     public function _get(string $setting): string
     {
-        return $this->data->{$setting} ?? '';
+        return $this->data->{$setting} ?? '[]';
     }
 
     /**

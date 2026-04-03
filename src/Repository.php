@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2026.04.02.0
+ * @version 2026.04.03.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.04.02';
+        return '2026.04.03';
     }
 
     /**
@@ -113,9 +113,9 @@ class Repository implements Iterator
             return;
         }
 
-        $createSql  = $this->createTable['table']   ?? null;
-        $indexSqls  = $this->createTable['indexes'] ?? [];
-        $seedSqls   = $this->createTable['seed']    ?? [];
+        $createSql = $this->createTable['table'] ?? null;
+        $indexSqls = $this->createTable['indexes'] ?? [];
+        $seedSqls = $this->createTable['seed'] ?? [];
 
         // 1) Ensure table exists (race-safe)
         if (!$this->tableExists($this->table)) {
@@ -359,6 +359,61 @@ class Repository implements Iterator
      */
     public function deleteByQuery(string $sql, array $keyBindings = []): void
     {
+        $this->database->deleteQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Delete an object by fields (where) in the database
+     *
+     * @param array $keyValues
+     * @param string $message
+     * @return void
+     */
+    public function deleteByWhere(array $keyValues, string $message = ''): void
+    {
+        $sql = "DELETE FROM {$this->table} WHERE ";
+        foreach ($keyValues as $key => $value) {
+            $sql .= "`{$key}` = :{$key} AND ";
+            $keyBindings[":{$key}"] = $value;
+        }
+        $sql = rtrim($sql, ' AND ');
+        if ($this->softDelete) {
+            $sql = "UPDATE {$this->table} SET active = 0 WHERE ";
+
+            if (key_exists('deleted_user_id', $this->fields)) {
+                $sql = "UPDATE {$this->table} SET active = 0, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE ";
+                $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+            } elseif (key_exists('deleted', $this->fields)) {
+                $sql = "UPDATE {$this->table} SET active = 0, deleted = :deleted WHERE ";
+                $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+            }
+
+            foreach ($keyValues as $key => $value) {
+                $sql .= "`{$key}` = :{$key} AND ";
+                $keyBindings[":{$key}"] = $value;
+            }
+            if ($message !== '') {
+                $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message WHERE ";
+
+                if (key_exists('deleted_user_id', $this->fields)) {
+                    $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE ";
+                    $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                    $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+                } elseif (key_exists('deleted', $this->fields)) {
+                    $sql = "UPDATE {$this->table} SET active = 0, message_delete = :message, deleted = :deleted WHERE ";
+                    $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+                }
+
+                foreach ($keyValues as $key => $value) {
+                    $sql .= "`{$key}` = :{$key} AND ";
+                    $keyBindings[":{$key}"] = $value;
+                }
+                $keyBindings[':message'] = $message;
+            }
+        }
+
+        $sql = rtrim($sql, ' AND ');
         $this->database->deleteQuery($sql, $keyBindings);
     }
 
@@ -904,7 +959,7 @@ class Repository implements Iterator
             } else {
                 $this->saveObject($object);
                 if (isset($object->id)) {
-                    $object->id = (int) $this->database->lastInsertId();
+                    $object->id = (int)$this->database->lastInsertId();
                 }
             }
 
@@ -1101,6 +1156,35 @@ class Repository implements Iterator
             $sql .= "`{$key}` = :{$key} AND ";
             $keyBindings[":{$key}"] = $primaryKeyValue[$key];
         }
+        $sql = rtrim($sql, ' AND ');
+        $this->database->updateQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Undelete an object by fields (where) in the database
+     *
+     * @param array $keyValues
+     * @return void
+     */
+    public function undeleteByWhere(array $keyValues): void
+    {
+        $sql = "UPDATE {$this->table} SET active = 1 WHERE ";
+        $keyBindings = [];
+
+        if (key_exists('deleted_user_id', $this->fields)) {
+            $sql = "UPDATE {$this->table} SET active = 1, deleted = :deleted, deleted_user_id = :deleted_user_id WHERE ";
+            $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+            $keyBindings[':deleted_user_id'] = $_SESSION['user']['id'] ?? 0;
+        } elseif (key_exists('deleted', $this->fields)) {
+            $sql = "UPDATE {$this->table} SET active = 1, deleted = :deleted WHERE ";
+            $keyBindings[':deleted'] = date('Y-m-d H:i:s');
+        }
+
+        foreach ($keyValues as $key => $value) {
+            $sql .= "`{$key}` = :{$key} AND ";
+            $keyBindings[":{$key}"] = $value;
+        }
+
         $sql = rtrim($sql, ' AND ');
         $this->database->updateQuery($sql, $keyBindings);
     }

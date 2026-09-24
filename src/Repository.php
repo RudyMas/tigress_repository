@@ -10,8 +10,8 @@ use Throwable;
  * Class Repository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2024-2026, rudymas.be. (http://www.rudymas.be/)
- * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
+ * @copyright 2024-2026, Rudy Mas (https://www.rudymas.be)
+ * @license Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
  * @version 2026.04.03.0
  * @package Tigress\Repository
  */

@@ -3,13 +3,14 @@
 namespace Tigress;
 
 use stdClass;
+use Throwable;
 
 /**
  * Class SetupRepository (PHP version 8.5)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2025-2026, rudymas.be. (http://www.rudymas.be/)
- * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
+ * @copyright 2025-2026, Rudy Mas (https://www.rudymas.be)
+ * @license Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
  * @version 2026.04.02.0
  * @package Tigress\SetupRepository
  */
@@ -103,6 +104,7 @@ class SetupRepository extends Repository
      * Save all data to the database
      *
      * @return void
+     * @throws Throwable
      */
     public function _saveAll(): void
     {
@@ -122,6 +124,7 @@ class SetupRepository extends Repository
      * @param string $setting
      * @param string $value
      * @return void
+     * @throws Throwable
      */
     public function _set(string $setting, string $value): void
     {

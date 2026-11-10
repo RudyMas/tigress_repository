@@ -12,7 +12,7 @@ use Throwable;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2026, Rudy Mas (https://www.rudymas.be)
  * @license Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
- * @version 2026.04.03.0
+ * @version 2026.11.10.0
  * @package Tigress\Repository
  */
 class Repository implements Iterator
@@ -36,7 +36,7 @@ class Repository implements Iterator
      */
     public static function version(): string
     {
-        return '2026.04.03';
+        return '2026.11.10';
     }
 
     /**
@@ -488,6 +488,19 @@ class Repository implements Iterator
     {
         $sql = "DELETE FROM {$this->table} WHERE id = :id";
         $keyBindings[':id'] = $id;
+        $this->database->deleteQuery($sql, $keyBindings);
+    }
+
+    /**
+     * Force Delete an object by where clause in the database
+     *
+     * @param string $whereClause
+     * @param array $keyBindings
+     * @return void
+     */
+    public function forceDeleteByWhereQuery(string $whereClause, array $keyBindings = []): void
+    {
+        $sql = "DELETE FROM {$this->table} WHERE {$whereClause}";
         $this->database->deleteQuery($sql, $keyBindings);
     }
 
